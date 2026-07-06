@@ -28,6 +28,7 @@ Masked Event Model / 自回归模型学"正常行为语法"，用逐位置预测
 4. `ENCODING_REPORT.md` — 编码消融：统一 Schema + 个人金额基线（最大单项增益）
 5. `ARCH_REPORT.md` — 架构探索：AR+时间偏置；按数据形状的三档定稿配置
 6. `IMPROVEMENT_REPORT.md` — 提升轮：字段遮罩迁移 / 自清洗(负结果) / 对手方特征与分数融合
+7. **`FINAL_SOLUTION.md` — 定稿方案：五层系统架构 + 分阶段落地路线（读这篇就够）**
 
 ## 展示页面
 
