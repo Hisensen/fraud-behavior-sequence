@@ -8,3 +8,11 @@ tabformer_windows.pkl
 __pycache__/
 *.pyc
 .DS_Store
+
+# 演练产物(可用 fraud_pipeline.py 重新生成)
+demo_银行流水.csv
+demo_data.jsonl
+demo_new.jsonl
+demo_outputs/
+demo_new_scores.csv
+outputs/

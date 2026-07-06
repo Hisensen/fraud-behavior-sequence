@@ -48,6 +48,21 @@ Masked Event Model / 自回归模型学"正常行为语法"，用逐位置预测
 | 资金流（转账流水） | 整事件遮罩 | mean | 标准 |
 | 消费流（卡交易） | 字段级遮罩（遮金额留类别） | top-k | 标准 |
 
+## 真实数据接入（统一流水线）
+
+格式未知的真实数据用 `fraud_pipeline.py` 五步接入（详见 **USAGE.md**）：
+
+```bash
+python fraud_pipeline.py inspect  流水.csv                 # ① 自动识别字段 → mapping.json
+python fraud_pipeline.py convert  流水.csv -m mapping.json -o data.jsonl
+python fraud_pipeline.py profile  data.jsonl               # ③ 质量自检 + oracle 信号摸底
+python fraud_pipeline.py run      data.jsonl --shape operation -o outputs/
+python fraud_pipeline.py score    新数据.jsonl --model outputs/model.pt
+```
+
+端到端演练（模拟银行流水表 13.5 万行）验证：字段全自动识别、
+往返转换无损、run 出 AUC 0.982、score 复用训练期归一化统计与阈值。
+
 ## 复现
 
 ```bash

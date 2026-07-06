@@ -1,0 +1,21 @@
+{
+  "user_col": "客户账号",
+  "time_col": "交易时间",
+  "type_col": "事件类型",
+  "amount_col": "交易金额",
+  "result_col": "操作结果",
+  "channel_col": "渠道",
+  "ip_col": "IP变化",
+  "label_col": "是否欺诈账户",
+  "success_values": [
+    "成功",
+    "S",
+    "1",
+    "success",
+    "0000"
+  ],
+  "time_format": null,
+  "min_events": 10,
+  "max_len": 200,
+  "_说明": "确认/修改各列名; 没有的字段填 null; label_col 为空则全部当无标签处理"
+}
