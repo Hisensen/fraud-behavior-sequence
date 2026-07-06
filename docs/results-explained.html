@@ -1,0 +1,349 @@
+<title>结果解读 · 这些数字到底什么意思</title>
+<style>
+:root{
+  --bg:#F5F7F6; --surface:#FFFFFF; --ink:#1B2723; --ink2:#5A6B66; --ink3:#8A9893;
+  --line:#E1E7E4; --line2:#CBD5D1;
+  --normal:#00997C; --normal-soft:rgba(0,153,124,.10);
+  --fraud:#C24A32; --fraud-soft:rgba(194,74,50,.10);
+  --warn:#9A6B1C; --warn-soft:rgba(154,107,28,.12);
+  --code-bg:#EEF2F0;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#121816; --surface:#1A2320; --ink:#E4EBE8; --ink2:#93A29C; --ink3:#6C7B76;
+    --line:#2A3531; --line2:#3A4744;
+    --normal:#26A69A; --normal-soft:rgba(38,166,154,.14);
+    --fraud:#E0704F; --fraud-soft:rgba(224,112,79,.14);
+    --warn:#D9A03F; --warn-soft:rgba(217,160,63,.15);
+    --code-bg:#222D29;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#121816; --surface:#1A2320; --ink:#E4EBE8; --ink2:#93A29C; --ink3:#6C7B76;
+  --line:#2A3531; --line2:#3A4744;
+  --normal:#26A69A; --normal-soft:rgba(38,166,154,.14);
+  --fraud:#E0704F; --fraud-soft:rgba(224,112,79,.14);
+  --warn:#D9A03F; --warn-soft:rgba(217,160,63,.15);
+  --code-bg:#222D29;
+}
+:root[data-theme="light"]{
+  --bg:#F5F7F6; --surface:#FFFFFF; --ink:#1B2723; --ink2:#5A6B66; --ink3:#8A9893;
+  --line:#E1E7E4; --line2:#CBD5D1;
+  --normal:#00997C; --normal-soft:rgba(0,153,124,.10);
+  --fraud:#C24A32; --fraud-soft:rgba(194,74,50,.10);
+  --warn:#9A6B1C; --warn-soft:rgba(154,107,28,.12);
+  --code-bg:#EEF2F0;
+}
+*{box-sizing:border-box}
+body{margin:0; background:var(--bg); color:var(--ink);
+  font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  font-size:15.5px; line-height:1.75}
+.wrap{max-width:900px; margin:0 auto; padding:46px 24px 80px}
+h1,h2,h3{font-family:"Songti SC","STSong","Noto Serif SC",serif; text-wrap:balance; line-height:1.3}
+h1{font-size:31px; margin:8px 0 14px}
+h2{font-size:22px; margin:0 0 4px}
+p{margin:0 0 12px}
+.eyebrow{font-size:12px; letter-spacing:.18em; color:var(--ink2)}
+.lede{color:var(--ink2); max-width:46em}
+.mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace; font-variant-numeric:tabular-nums}
+code{background:var(--code-bg); padding:1px 6px; border-radius:4px;
+  font-family:ui-monospace,"SF Mono",Menlo,monospace; font-size:.88em}
+section{margin-top:52px}
+.sec-head{display:flex; align-items:baseline; gap:12px;
+  border-bottom:2px solid var(--ink); padding-bottom:8px; margin-bottom:16px}
+.sec-no{font-family:ui-monospace,"SF Mono",Menlo,monospace; font-size:13px; color:var(--ink3)}
+.sec-sub{color:var(--ink2); font-size:14px; margin-top:2px}
+.card{background:var(--surface); border:1px solid var(--line); border-radius:10px;
+  padding:18px 20px; margin:14px 0}
+.callout{border-left:3px solid var(--warn); background:var(--warn-soft);
+  border-radius:0 8px 8px 0; padding:12px 18px; margin:16px 0}
+.callout.good{border-left-color:var(--normal); background:var(--normal-soft)}
+.callout p:last-child{margin-bottom:0}
+canvas{display:block; width:100%; height:auto}
+.strip-lbl{display:flex; justify-content:space-between; font-size:12px;
+  color:var(--ink2); margin-top:4px}
+.legend{display:flex; gap:18px; font-size:12.5px; color:var(--ink2); margin:8px 0 2px}
+.legend .s{display:inline-block; width:9px; height:9px; border-radius:50%; margin-right:5px; vertical-align:-1px}
+/* 滑块区 */
+.slider-row{display:flex; align-items:center; gap:14px; margin:12px 0 4px}
+input[type=range]{flex:1; accent-color:var(--warn); height:26px}
+.stats{display:flex; flex-wrap:wrap; gap:10px; margin:12px 0 2px}
+.stat{flex:1 1 150px; background:var(--code-bg); border:1px solid var(--line);
+  border-radius:8px; padding:10px 14px}
+.stat .v{font-family:ui-monospace,"SF Mono",Menlo,monospace; font-size:21px;
+  font-weight:700; font-variant-numeric:tabular-nums}
+.stat .k{font-size:12px; color:var(--ink2); margin-top:2px}
+.stat.good .v{color:var(--normal)} .stat.bad .v{color:var(--fraud)}
+.presets{display:flex; gap:8px; margin-top:8px}
+.presets button{font:inherit; font-size:12.5px; padding:4px 14px; border-radius:99px;
+  border:1px solid var(--line2); background:var(--surface); color:var(--ink2); cursor:pointer}
+.presets button:hover{border-color:var(--ink3); color:var(--ink)}
+/* 三档对比 */
+.tri{margin:10px 0}
+.tri .row{margin:14px 0}
+.tri .cap{display:flex; justify-content:space-between; align-items:baseline;
+  font-size:13.5px; margin-bottom:4px}
+.tri .cap .a{font-family:ui-monospace,"SF Mono",Menlo,monospace; font-weight:700; font-size:15px}
+/* 配对条形 */
+.pair-bars .row{display:grid; grid-template-columns:150px 1fr 100px; gap:12px;
+  align-items:center; margin:13px 0}
+.pair-bars .lbl{font-size:13.5px; text-align:right}
+.pair-bars .lbl small{display:block; color:var(--ink3); font-size:11px}
+.pair-bars .track{position:relative; height:34px}
+.pair-bars .bar{position:absolute; left:0; height:14px; border-radius:0 4px 4px 0}
+.pair-bars .bar.mem{top:1px; background:var(--normal)}
+.pair-bars .bar.ora{top:19px; background:var(--ink3); opacity:.55}
+.pair-bars .ref{position:absolute; top:-3px; bottom:-3px; width:0;
+  border-left:2px dashed var(--line2)}
+.pair-bars .vv{font-family:ui-monospace,"SF Mono",Menlo,monospace; font-size:12px;
+  line-height:1.6; color:var(--ink2)}
+table{border-collapse:collapse; width:100%; font-size:13.5px}
+th{text-align:left; font-weight:600; color:var(--ink3); font-size:12px;
+  border-bottom:1.5px solid var(--line2); padding:6px 10px 6px 0}
+td{border-bottom:1px solid var(--line); padding:6px 10px 6px 0; vertical-align:top}
+.foot{margin-top:60px; border-top:1px solid var(--line); padding-top:14px;
+  font-size:12.5px; color:var(--ink3)}
+strong{font-weight:600}
+ul{padding-left:1.4em; margin:8px 0}
+li{margin:4px 0}
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">反欺诈 · 结果解读 · 全部使用真实实验分数 · 2026-07-03</div>
+  <h1>这些数字到底什么意思？</h1>
+  <p class="lede">这一页只回答两个问题：① <strong>AUC 那些 0.x 的数字，翻译成人话是什么</strong>；② <strong>为什么每个实验都要和"用了标签的有监督模型"比一下</strong>。所有图里的点都是真实实验算出的分数，不是示意。</p>
+</header>
+
+<!-- ========== 1 分数分布 ========== -->
+<section>
+  <div class="sec-head"><span class="sec-no">01</span>
+    <div><h2>模型的输出：每个用户一个"异常分"</h2>
+    <div class="sec-sub">先看原材料——temporal 实验 600 个测试用户的真实分数</div></div></div>
+  <p>模型不直接说"他是骗子"，只给每个用户打一个分：越不像正常人，分越高。下图每个点是一个真实用户，横轴是分数（绿点=白样本 100 人，红点=黑样本 500 人）：</p>
+  <div class="card">
+    <canvas id="cv-main" width="1600" height="300"></canvas>
+    <div class="strip-lbl"><span id="ax-lo"></span><span>← 异常分 →</span><span id="ax-hi"></span></div>
+    <div class="legend">
+      <span><span class="s" style="background:var(--normal)"></span>白样本（正常用户）</span>
+      <span><span class="s" style="background:var(--fraud)"></span>黑样本（欺诈用户）</span>
+    </div>
+    <p style="margin:8px 0 0">肉眼就能看到结论：<strong>两团点大部分错开，但中间有重叠</strong>。红点整体在右（模型确实觉得他们更反常），但有少量红点混进绿区（漏网的）、个别绿点偏右（会被误伤的）。所有指标都只是在量化"这两团分得有多开"。</p>
+  </div>
+</section>
+
+<!-- ========== 2 阈值滑块 ========== -->
+<section>
+  <div class="sec-head"><span class="sec-no">02</span>
+    <div><h2>亲手切一刀：阈值滑块</h2>
+    <div class="sec-sub">拖动下面的滑块，右边超线的判为可疑——看看你能抓多少、误伤多少</div></div></div>
+  <div class="card">
+    <canvas id="cv-thr" width="1600" height="300"></canvas>
+    <div class="slider-row">
+      <span class="mono" style="font-size:13px">阈值</span>
+      <input type="range" id="thr" min="0" max="1000" value="620">
+      <span class="mono" id="thr-v" style="font-size:14px; font-weight:700; min-width:52px"></span>
+    </div>
+    <div class="stats">
+      <div class="stat good"><div class="v" id="st-catch">—</div><div class="k">抓住的黑样本（召回率）</div></div>
+      <div class="stat bad"><div class="v" id="st-miss">—</div><div class="k">漏掉的黑样本</div></div>
+      <div class="stat bad"><div class="v" id="st-fp">—</div><div class="k">误伤的白样本（误报率）</div></div>
+    </div>
+    <div class="presets">
+      快捷：<button data-p="fpr1">误报率 1%（上线常用）</button>
+      <button data-p="fpr5">误报率 5%</button>
+      <button data-p="mid">切在两团中间</button>
+    </div>
+    <p style="margin:10px 0 0; font-size:13.5px; color:var(--ink2)">体会到的规律就是反欺诈运营的本质：<strong>刀往左移多抓坏人但多误伤好人，往右移反之</strong>——不存在两全的刀位，只存在业务能接受的权衡。实验里通报的 "R@FPR1%=70.8%" 就是"刀定在误报 1% 的位置时能抓住 70.8% 的黑样本"。（注：这批测试黑白比是 5:1，为实验方便；真实场景白样本占绝对多数，同样的误报<em>率</em>意味着更大的误伤<em>数量</em>，所以刀通常定得很严。）</p>
+  </div>
+</section>
+
+<!-- ========== 3 AUC ========== -->
+<section>
+  <div class="sec-head"><span class="sec-no">03</span>
+    <div><h2>AUC：一个数字概括"两团分得多开"</h2>
+    <div class="sec-sub">定义：随机抽一个黑、一个白，黑的分数更高的概率</div></div></div>
+  <p>刚才你拖滑块时会发现：两团分得越开，随便怎么切都好切；越重叠，怎么切都难受。AUC 就是把"分得多开"压缩成一个数，<strong>它不依赖你选哪个刀位</strong>。三档真实对比（同一批用户、三种打分方式）：</p>
+  <div class="card tri">
+    <div class="row">
+      <div class="cap"><span>❌ 随机乱打分（对照组）</span><span class="a">AUC = 0.47</span></div>
+      <canvas id="cv-rand" width="1600" height="120"></canvas>
+      <div style="font-size:12.5px; color:var(--ink2)">两团完全叠死——随机抽一黑一白，黑分更高的概率 ≈ 抛硬币。切哪都一样烂。</div>
+    </div>
+    <div class="row">
+      <div class="cap"><span>⚠️ 打分方式不当（z-norm 后直接平均）</span><span class="a">AUC = 0.756</span></div>
+      <canvas id="cv-mid" width="1600" height="120"></canvas>
+      <div style="font-size:12.5px; color:var(--ink2)">开始错开但重叠很大——能用来排序，单独定案会大量误判。</div>
+    </div>
+    <div class="row">
+      <div class="cap"><span>✅ 正确打分（z-norm + top-5）</span><span class="a">AUC = 0.959</span></div>
+      <canvas id="cv-top" width="1600" height="120"></canvas>
+      <div style="font-size:12.5px; color:var(--ink2)">基本分开，重叠只剩尾部——96% 的黑白配对里黑分更高。这就是"效果好"长的样子。</div>
+    </div>
+  </div>
+  <div class="callout"><p><strong>速查表：</strong>AUC 0.5=抛硬币；0.6=聊胜于无；0.7=能辅助排序；0.8=可用；0.9+=优秀；1.0=完美分开。我们各数据集的成绩：以太坊 0.904、Sparkov 0.886、temporal 0.959 属于"优秀"档，PaySim 0.561 属于"≈抛硬币"档。</p></div>
+</section>
+
+<!-- ========== 4 为什么和有监督比 ========== -->
+<section>
+  <div class="sec-head"><span class="sec-no">04</span>
+    <div><h2>为什么要和"有监督"比：它是量数据的尺子</h2>
+    <div class="sec-sub">开卷考试 vs 闭卷考试</div></div></div>
+  <p>把每份数据看成一张考卷：</p>
+  <ul>
+    <li><strong>有监督 oracle = 开卷考生</strong>——它拿着全部答案（黑白标签）学习，考出来的分数逼近这份数据的<strong>理论上限</strong>：数据里总共有多少可分的信号，它基本能全捞走；</li>
+    <li><strong>我们的 MEM = 闭卷考生</strong>——从没见过一个黑标签，全靠自己学"正常长什么样"。</li>
+  </ul>
+  <p>所以对比的意义是：<strong>MEM 的绝对分数说明不了任何事，"闭卷离开卷差几分"才说明方法的好坏；开卷本身考砸了，则说明卷子（数据）没货。</strong>六个数据集的对比：</p>
+  <div class="card pair-bars">
+    <div class="legend" style="margin-bottom:10px">
+      <span><span class="s" style="background:var(--normal); border-radius:3px"></span>MEM（闭卷·零标签）</span>
+      <span><span class="s" style="background:var(--ink3); opacity:.55; border-radius:3px"></span>有监督 oracle（开卷·全标签）</span>
+      <span style="color:var(--ink3)">虚线 = 随机水平 0.5</span>
+    </div>
+    <div class="row"><div class="lbl">temporal<small>合成基准</small></div>
+      <div class="track"><div class="ref" style="left:50%"></div><div class="bar mem" style="width:95.9%"></div><div class="bar ora" style="width:99.9%"></div></div>
+      <div class="vv">0.959<br>0.999</div></div>
+    <div class="row"><div class="lbl">Ethereum 钓鱼<small>真实数据</small></div>
+      <div class="track"><div class="ref" style="left:50%"></div><div class="bar mem" style="width:90.4%"></div><div class="bar ora" style="width:93.4%"></div></div>
+      <div class="vv">0.904<br>0.934</div></div>
+    <div class="row"><div class="lbl">Sparkov<small>信用卡</small></div>
+      <div class="track"><div class="ref" style="left:50%"></div><div class="bar mem" style="width:88.6%"></div><div class="bar ora" style="width:88.0%"></div></div>
+      <div class="vv">0.886 ★超过<br>0.880</div></div>
+    <div class="row"><div class="lbl">BankSim<small>银行支付</small></div>
+      <div class="track"><div class="ref" style="left:50%"></div><div class="bar mem" style="width:73.6%"></div><div class="bar ora" style="width:89.1%"></div></div>
+      <div class="vv">0.736<br>0.891</div></div>
+    <div class="row"><div class="lbl">TabFormer<small>信用卡</small></div>
+      <div class="track"><div class="ref" style="left:50%"></div><div class="bar mem" style="width:68.7%"></div><div class="bar ora" style="width:76.0%"></div></div>
+      <div class="vv">0.687<br>0.760</div></div>
+    <div class="row"><div class="lbl">PaySim<small>手机转账</small></div>
+      <div class="track"><div class="ref" style="left:50%"></div><div class="bar mem" style="width:56.1%"></div><div class="bar ora" style="width:61.0%"></div></div>
+      <div class="vv">0.561<br>0.610</div></div>
+  </div>
+  <p>照着"看差距不看绝对值"的读法，六行各是什么结论：</p>
+  <div class="card">
+    <table>
+      <tr><th>数据</th><th>读法</th></tr>
+      <tr><td class="mono">temporal / Ethereum / TabFormer</td><td>闭卷贴着开卷（差 0.03~0.07）——<strong>方法把数据里有的信号几乎全榨出来了</strong>，绝对分的高低是数据信号强弱决定的</td></tr>
+      <tr><td class="mono">Sparkov ★</td><td>闭卷<strong>反超</strong>开卷——因为我们给 MEM 加了"个人金额基线"字段，这是 oracle 的统计特征里没有的信息维度</td></tr>
+      <tr><td class="mono">BankSim</td><td>差距偏大（0.16）——训练数据欺诈污染率 19%，超出验证过的 10% 上限，是已知边界的实证</td></tr>
+      <tr><td class="mono">PaySim</td><td><strong>开卷考生也只有 0.61</strong> → 卷子本身没货（欺诈是随机注入的，行为里没有信号）。这 0.561 不是方法的失败，是这份数据被判"不值得用"的证据</td></tr>
+    </table>
+  </div>
+  <div class="callout good"><p><strong>这个对比对你还有一个实用价值：</strong>拿到北部湾数据后，先花半天跑个开卷 oracle，就能<strong>预测</strong>闭卷 MEM 大概能考多少（oracle 减 0.03~0.07）——不用训模型就知道这份数据值不值得做、能做到什么程度。</p></div>
+</section>
+
+<div class="foot">
+  <p>数据来源：01/02/03 节的点为 temporal 实验真实分数（<code>mem_model.pt</code> 重新打分，600 测试用户）；
+  04 节数值出自 <code>OPEN_DATA_SURVEY.md</code> / <code>ENCODING_REPORT.md</code>。
+  配套页面：方案全景 · 序列实样 · 流程拆解。</p>
+</div>
+</div>
+
+<script>
+var D = {"temporal": {"w": [2.478, 3.541, 2.533, 1.952, 1.505, 1.727, 3.06, 2.961, 2.441, 1.89, 2.015, 3.286, 2.838, 3.201, 2.746, 1.616, 3.45, 2.631, 2.116, 2.192, 2.559, 2.739, 2.03, 3.357, 2.118, 3.256, 3.303, 3.006, 2.632, 3.078, 2.252, 1.981, 2.16, 2.172, 2.17, 2.288, 3.516, 1.925, 2.123, 1.921, 2.563, 2.911, 2.753, 2.824, 1.675, 2.759, 2.346, 1.512, 2.469, 2.129, 2.749, 3.42, 2.831, 1.898, 2.539, 2.186, 2.885, 2.151, 2.108, 2.219, 2.686, 3.441, 2.444, 3.436, 2.538, 1.963, 2.561, 2.58, 1.54, 2.721, 2.814, 2.151, 2.906, 2.829, 1.834, 2.761, 2.211, 2.334, 3.212, 2.24, 2.613, 3.068, 2.342, 2.473, 2.325, 3.074, 2.34, 1.684, 2.939, 2.367, 3.248, 2.267, 3.228, 3.027, 2.54, 3.218, 3.273, 2.461, 2.144, 2.073], "b": [3.921, 3.735, 3.582, 4.22, 3.646, 2.961, 3.365, 4.276, 3.686, 3.011, 2.406, 3.782, 4.001, 4.25, 3.863, 4.216, 2.79, 3.81, 3.048, 3.991, 3.798, 3.506, 3.389, 4.41, 4.054, 3.956, 3.873, 3.882, 3.842, 3.847, 3.296, 3.678, 3.697, 3.845, 3.695, 3.99, 4.127, 3.847, 3.318, 3.63, 3.655, 3.901, 3.289, 3.59, 3.407, 3.786, 3.382, 3.755, 3.452, 3.849, 3.635, 3.994, 3.87, 3.622, 3.927, 3.534, 4.03, 3.681, 4.331, 3.718, 2.448, 3.415, 4.07, 3.994, 3.211, 4.169, 4.471, 3.477, 3.599, 3.939, 3.886, 3.709, 3.846, 3.081, 4.034, 4.135, 3.919, 3.679, 3.849, 4.115, 3.689, 3.984, 3.616, 3.453, 4.056, 3.324, 3.249, 4.163, 3.54, 3.725, 3.153, 3.555, 3.51, 3.973, 3.618, 4.26, 2.764, 4.675, 3.647, 2.959, 3.349, 3.49, 3.735, 4.047, 3.455, 3.56, 3.652, 2.352, 3.965, 3.567, 4.159, 3.716, 3.013, 3.942, 3.437, 3.701, 3.695, 3.521, 3.783, 3.591, 4.088, 3.721, 3.512, 4.146, 3.671, 3.227, 3.632, 3.479, 4.178, 4.166, 4.645, 3.761, 3.982, 4.166, 3.898, 3.701, 3.732, 3.811, 3.922, 3.821, 4.232, 3.835, 3.638, 3.812, 4.044, 3.843, 3.443, 3.513, 3.91, 3.779, 2.864, 2.748, 3.372, 3.458, 4.096, 3.676, 3.516, 3.154, 3.649, 3.724, 3.732, 3.477, 2.686, 3.546, 3.997, 3.382, 3.545, 2.884, 3.982, 4.365, 2.8, 3.612, 3.639, 3.144, 3.574, 2.463, 3.974, 3.814, 3.434, 3.556, 3.959, 3.734, 3.855, 4.16, 3.53, 3.294, 3.336, 3.417, 3.556, 3.112, 2.896, 3.5, 3.936, 3.631, 3.85, 4.666, 3.611, 3.212, 3.382, 3.625, 3.406, 3.585, 3.783, 3.22, 2.964, 3.569, 3.562, 3.502, 3.508, 3.98, 4.105, 3.991, 3.674, 2.893, 3.811, 3.694, 2.765, 3.904, 4.29, 3.536, 3.574, 3.256, 3.539, 3.713, 3.756, 3.845, 3.592, 3.638, 3.289, 3.549, 3.729, 3.864, 3.35, 3.401, 3.368, 3.192, 4.299, 4.079, 3.311, 4.122, 3.579, 4.182, 2.232, 2.515, 3.622, 3.712, 3.616, 3.07, 3.606, 4.011, 3.92, 3.78, 4.196, 3.79, 3.275, 3.208, 3.628, 4.076, 4.014, 3.62, 3.756, 3.834, 3.13, 3.526, 3.609, 3.176, 3.466, 3.928, 3.722, 3.534, 4.395, 3.449, 3.988, 3.444, 4.139, 3.626, 4.356, 3.633, 3.414, 3.642, 3.582, 3.661, 3.905, 3.509, 3.943, 3.891, 3.514, 3.849, 3.966, 3.747, 4.102, 3.488, 3.634, 2.96, 3.615, 4.208, 2.906, 3.331, 3.834, 2.74, 4.23, 3.308, 3.808, 3.383, 3.523, 4.42, 3.229, 4.091, 3.857, 3.96, 4.05, 3.921, 3.272, 4.045, 3.993, 3.513, 3.501, 4.013, 4.244, 3.64, 3.855, 3.72, 4.394, 3.531, 3.725, 3.285, 2.85, 3.59, 3.372, 3.186, 3.739, 3.649, 3.601, 3.682, 3.568, 4.045, 3.776, 3.534, 3.448, 3.614, 3.697, 4.369, 4.532, 3.726, 3.78, 3.733, 3.561, 3.83, 4.136, 4.304, 4.216, 3.833, 4.022, 3.409, 4.205, 3.799, 3.73, 3.78, 3.552, 3.265, 3.317, 3.707, 3.304, 3.186, 2.985, 3.53, 3.874, 3.74, 3.166, 2.928, 3.694, 3.728, 3.707, 3.767, 3.998, 3.369, 3.863, 2.83, 3.705, 2.929, 4.128, 3.725, 3.79, 3.423, 2.96, 3.473, 3.701, 2.538, 4.333, 3.706, 3.92, 3.107, 3.781, 3.806, 4.255, 3.559, 3.888, 3.981, 3.311, 4.124, 3.996, 3.694, 3.871, 3.031, 3.475, 3.269, 3.463, 2.761, 4.427, 3.873, 3.124, 3.893, 3.68, 3.986, 3.765, 3.867, 3.274, 4.343, 3.412, 4.009, 3.536, 3.938, 3.609, 3.675, 3.877, 4.186, 3.581, 3.341, 3.685, 3.728, 3.682, 3.844, 4.252, 3.711, 3.289, 3.408, 3.526, 3.589, 3.313, 4.286, 4.248, 3.556, 3.864, 3.027, 4.065, 4.279, 3.849, 4.234, 3.679, 3.814, 3.728, 3.576, 3.573, 3.684, 2.704, 3.425, 4.609, 4.465, 4.15, 3.618, 3.865, 3.822, 3.893, 3.593, 4.036, 4.041, 3.181, 3.542, 3.695, 3.965, 3.696, 3.778, 3.808, 3.287, 3.719, 4.039, 4.002, 3.41, 3.395, 3.674, 3.922, 3.641, 3.737, 3.604, 3.317, 3.508, 3.454, 4.339, 3.84, 3.475, 3.865, 3.337, 3.654, 3.736, 3.744, 4.307, 4.076, 3.469, 2.287, 3.379], "auc": 0.9594}, "demo": {"rand": {"auc": 0.47, "w": [0.637, 0.27, 0.041, 0.017, 0.813, 0.913, 0.607, 0.729, 0.544, 0.935, 0.816, 0.003, 0.857, 0.034, 0.73, 0.176, 0.863, 0.541, 0.3, 0.423, 0.028, 0.124, 0.671, 0.647, 0.615, 0.384, 0.997, 0.981, 0.686, 0.65, 0.688, 0.389, 0.135, 0.721, 0.525, 0.31, 0.486, 0.889, 0.934, 0.358, 0.572, 0.322, 0.594, 0.338, 0.392, 0.89, 0.227, 0.623, 0.084, 0.833, 0.787, 0.239, 0.876, 0.059, 0.336, 0.15, 0.45, 0.796, 0.231, 0.052, 0.405, 0.199, 0.091, 0.58, 0.299, 0.672, 0.2, 0.942, 0.365, 0.105, 0.629, 0.927, 0.44, 0.955, 0.5, 0.425, 0.62, 0.995, 0.949, 0.46, 0.758, 0.497, 0.529, 0.786, 0.415, 0.734, 0.711, 0.932, 0.115, 0.729, 0.927, 0.968, 0.015, 0.864, 0.981, 0.957, 0.149, 0.973, 0.89, 0.822], "b": [0.48, 0.232, 0.802, 0.924, 0.266, 0.539, 0.443, 0.931, 0.041, 0.732, 0.614, 0.028, 0.719, 0.016, 0.758, 0.513, 0.929, 0.066, 0.841, 0.067, 0.344, 0.43, 0.966, 0.562, 0.259, 0.242, 0.888, 0.226, 0.125, 0.288, 0.586, 0.554, 0.81, 0.56, 0.288, 0.413, 0.818, 0.627, 0.959, 0.369, 0.553, 0.594, 0.848, 0.145, 0.407, 0.91, 0.043, 0.823, 0.415, 0.83, 0.01, 0.365, 0.079, 0.653, 0.274, 0.703, 0.944, 0.127, 0.865, 0.059, 0.381, 0.43, 0.489, 0.976, 0.776, 0.309, 0.27, 0.863, 0.881, 0.511, 0.344, 0.995, 0.316, 0.183, 0.88, 0.812, 0.668, 0.958, 0.926, 0.748, 0.861, 0.247, 0.141, 0.67, 0.715, 0.167, 0.396, 0.91, 0.561, 0.578, 0.194, 0.526, 0.523, 0.089, 0.982, 0.571, 0.006, 0.773, 0.978, 0.59, 0.32, 0.188, 0.673, 0.195, 0.578, 0.602, 0.962, 0.072, 0.5, 0.744, 0.177, 0.388, 0.063, 0.726, 0.088, 0.395, 0.874, 0.472, 0.913, 0.766, 0.915, 0.127, 0.074, 0.07, 0.869, 0.634, 0.497, 0.164, 0.674, 0.318, 0.711, 0.46, 0.507, 0.79, 0.093, 0.579, 0.197, 0.808, 0.489, 0.989, 0.183, 0.963, 0.801, 0.481, 0.814, 0.603, 0.655, 0.914, 0.065, 0.835, 0.382, 0.326, 0.994, 0.781, 0.486, 0.423, 0.878, 0.087, 0.708, 0.789, 0.799, 0.322, 0.797, 0.225, 0.362, 0.417, 0.541, 0.113, 0.407, 0.0, 0.744, 0.852, 0.139, 0.704, 0.821, 0.982, 0.844, 0.424, 0.98, 0.974, 0.504, 0.753, 0.914, 0.476, 0.864, 0.702, 0.294, 0.768, 0.571, 0.094, 0.391, 0.074, 0.476, 0.429, 0.424, 0.586, 0.123, 0.934, 0.684, 0.824, 0.897, 0.583, 0.04, 0.711, 0.569, 0.826, 0.532, 0.813, 0.997, 0.351, 0.171, 0.392, 0.753, 0.439, 0.588, 0.127, 0.726, 0.28, 0.191, 0.863, 0.564, 0.484, 0.899, 0.086, 0.696, 0.328, 0.175, 0.675, 0.363, 0.33, 0.944, 0.199, 0.512, 0.024, 0.163, 0.883, 0.789, 0.557, 0.222, 0.558, 0.012, 0.713, 0.717, 0.646, 0.611, 0.074, 0.246, 0.574, 0.394, 0.992, 0.924, 0.152, 0.59, 0.696, 0.137, 0.313, 0.716, 0.901, 0.342, 0.239, 0.822, 0.585, 0.477, 0.256, 0.073, 0.018, 0.58, 0.191, 0.976, 0.107, 0.452, 0.395, 0.232, 0.749, 0.644, 0.726, 0.083, 0.353, 0.52, 0.427, 0.041, 0.194, 0.945, 0.163, 0.852, 0.822, 0.391, 0.467, 0.824, 0.681, 0.837, 0.758, 0.691, 0.913, 0.823, 0.179, 0.748, 0.087, 0.426, 0.397, 0.202, 0.938, 0.095, 0.005, 0.323, 0.991, 0.265, 0.831, 0.173, 0.586, 0.958, 0.717, 0.981, 0.575, 0.983, 0.837, 0.778, 0.888, 0.631, 0.356, 0.528, 0.227, 0.778, 0.17, 0.577, 0.536, 0.672, 0.76, 0.11, 0.625, 0.414, 0.614, 0.694, 0.585, 0.733, 0.52, 0.463, 0.287, 0.229, 0.695, 0.696, 0.195, 0.972, 0.671, 0.531, 0.841, 0.487, 0.476, 0.258, 0.156, 0.712, 0.844, 0.678, 0.369, 0.576, 0.563, 0.937, 0.388, 0.165, 0.877, 0.895, 0.048, 0.198, 0.636, 0.789, 0.607, 0.192, 0.118, 0.506, 0.816, 0.217, 0.075, 0.551, 0.192, 0.067, 0.773, 0.821, 0.398, 0.294, 0.277, 0.361, 0.577, 0.528, 0.355, 0.637, 0.676, 0.558, 0.387, 0.624, 0.592, 0.34, 0.303, 0.546, 0.612, 0.611, 0.383, 0.566, 0.986, 0.428, 0.843, 0.081, 0.875, 0.942, 0.262, 0.012, 0.483, 0.183, 0.972, 0.898, 0.961, 0.604, 0.515, 0.833, 0.652, 0.249, 0.934, 0.44, 0.774, 0.501, 0.183, 0.296, 0.574, 0.143, 0.014, 0.434, 0.762, 0.614, 0.324, 0.717, 0.485, 1.0, 0.776, 0.831, 0.26, 0.152, 0.199, 0.432, 0.512, 0.195, 0.78, 0.868, 0.316, 0.508, 0.594, 0.722, 0.147, 0.281, 0.731, 0.568, 0.9, 0.448, 0.407, 0.307, 0.231, 0.651, 0.265, 0.862, 0.271, 0.673, 0.568, 0.628, 0.895, 0.17, 0.15, 0.122, 0.076, 0.534, 0.166, 0.807, 0.023, 0.375, 0.473, 0.217, 0.356, 0.223, 0.282, 0.927, 0.417, 0.386, 0.611, 0.664, 0.66, 0.085, 0.582, 0.736, 0.796, 0.589, 0.131, 0.084, 0.323, 0.928, 0.473, 0.895, 0.46, 0.755, 0.485, 0.709, 0.317, 0.89, 0.266]}, "mid": {"auc": 0.756, "w": [0.191, 0.207, 0.152, -0.263, -0.162, 0.046, -0.077, 0.097, 0.492, -0.183, -0.165, 0.057, 0.002, 0.111, -0.002, -0.08, 0.248, 0.092, -0.033, -0.247, -0.13, -0.132, 0.235, 0.168, 0.075, 0.257, 0.134, 0.148, 0.102, 0.249, 0.093, 0.129, -0.078, 0.144, -0.038, 0.162, 0.099, 0.096, -0.175, -0.039, 0.199, -0.136, -0.007, 0.167, 0.014, -0.002, 0.266, 0.057, -0.031, -0.006, 0.105, -0.038, 0.274, -0.079, -0.028, 0.113, 0.083, 0.202, 0.075, 0.225, 0.02, 0.228, 0.134, 0.108, 0.155, 0.039, 0.22, -0.049, 0.113, 0.039, 0.15, -0.107, 0.264, 0.111, -0.01, -0.008, 0.132, -0.14, 0.095, -0.085, 0.208, -0.019, 0.145, 0.206, 0.109, 0.195, -0.102, -0.02, -0.044, 0.007, 0.138, 0.025, 0.237, 0.107, -0.041, 0.117, 0.28, -0.185, 0.082, 0.09], "b": [0.397, -0.05, 0.336, 0.53, 0.092, 0.171, 0.151, 0.322, 0.367, -0.057, 0.124, 0.344, 0.141, 0.297, -0.116, 0.251, 0.074, 0.093, 0.018, 0.416, 0.189, -0.123, 0.37, 0.343, 0.287, 0.509, 0.113, 0.285, 0.097, 0.088, 0.241, 0.078, 0.242, 0.071, 0.269, 0.224, 0.318, 0.388, 0.086, 0.161, 0.141, 0.079, 0.398, -0.114, 0.29, 0.033, 0.183, 0.235, 0.089, -0.034, 0.549, 0.441, 0.446, 0.316, 0.236, -0.14, 0.37, 0.317, 0.011, 0.022, 0.025, 0.239, 0.328, 0.493, 0.095, 0.308, 0.423, 0.102, 0.311, 0.211, 0.22, 0.044, 0.251, -0.122, 0.697, 0.293, 0.202, 0.219, 0.221, 0.406, -0.022, 0.628, 0.23, -0.184, 0.382, 0.237, 0.209, 0.165, 0.184, 0.044, -0.196, 0.454, 0.33, -0.02, 0.405, 0.411, -0.198, 0.567, -0.128, -0.057, 0.315, 0.019, -0.066, 0.273, 0.137, -0.095, 0.021, -0.219, 0.414, 0.376, 0.296, 0.245, 0.349, 0.098, 0.181, 0.289, 0.381, 0.068, 0.629, 0.355, 0.302, 0.257, -0.042, 0.55, 0.279, 0.18, 0.466, 0.049, 0.561, 0.555, 0.388, 0.323, 0.069, 0.294, 0.314, 0.318, 0.38, 0.189, 0.349, 0.271, 0.247, 0.335, 0.353, 0.482, 0.355, 0.245, 0.313, 0.133, 0.669, 0.122, -0.277, 0.129, 0.292, 0.239, 0.355, 0.119, -0.083, 0.037, 0.191, 0.2, 0.081, -0.012, 0.139, 0.057, 0.449, 0.32, 0.261, -0.013, 0.363, 0.412, 0.185, 0.523, 0.078, 0.072, -0.033, 0.029, 0.272, 0.463, -0.04, 0.402, 0.398, 0.141, 0.401, 0.225, 0.468, -0.018, 0.3, 0.057, 0.136, 0.189, 0.125, 0.327, 0.675, 0.308, 0.213, 0.773, 0.269, 0.011, -0.004, 0.289, 0.192, -0.069, 0.499, -0.108, -0.082, 0.146, 0.142, 0.067, 0.124, 0.205, 0.199, 0.116, 0.33, -0.116, 0.226, 0.132, 0.13, 0.079, 0.096, 0.308, 0.031, 0.004, 0.53, 0.165, 0.249, 0.295, 0.276, 0.441, 0.26, 0.383, 0.298, 0.242, 0.056, 0.101, 0.007, 0.115, 0.286, 0.387, 0.089, 0.455, 0.18, 0.517, 0.004, 0.2, 0.313, 0.012, 0.331, -0.154, 0.447, 0.25, 0.249, 0.146, 0.487, 0.186, -0.129, 0.187, 0.307, 0.267, 0.338, 0.37, 0.083, 0.443, 0.011, 0.077, 0.151, 0.333, 0.178, 0.319, 0.355, 0.335, 0.506, 0.244, 0.179, 0.298, 0.076, 0.225, 0.557, 0.293, 0.104, 0.116, 0.207, 0.231, 0.416, 0.107, 0.527, 0.25, 0.237, 0.221, 0.517, 0.364, 0.424, 0.343, 0.175, -0.247, 0.326, 0.468, -0.099, 0.048, 0.215, 0.104, 0.145, 0.004, 0.181, -0.019, 0.505, 0.367, 0.098, 0.381, 0.452, 0.171, 0.304, 0.201, 0.104, 0.244, 0.303, 0.214, 0.175, 0.091, 0.302, 0.189, 0.643, 0.026, 0.374, 0.096, -0.074, 0.224, -0.189, 0.403, 0.124, 0.078, 0.186, 0.259, 0.218, 0.305, -0.031, 0.354, 0.2, 0.139, 0.31, 0.049, 0.04, 0.326, 0.264, 0.496, 0.073, 0.219, 0.384, 0.544, 0.396, 0.292, 0.477, 0.37, 0.434, 0.096, 0.476, 0.198, 0.233, 0.529, -0.254, 0.167, 0.007, 0.136, 0.138, 0.012, -0.177, 0.222, 0.516, 0.215, 0.033, -0.131, 0.479, 0.253, 0.032, 0.07, 0.373, 0.01, 0.155, -0.082, 0.169, -0.093, 0.517, 0.144, 0.122, 0.185, -0.209, 0.461, 0.561, -0.008, 0.265, 0.098, 0.285, 0.091, 0.072, 0.28, 0.441, 0.148, 0.264, 0.311, -0.011, 0.389, 0.335, 0.405, 0.618, -0.193, 0.054, -0.116, -0.066, 0.181, 0.274, 0.258, -0.012, -0.067, 0.408, 0.028, 0.335, 0.449, 0.366, 0.615, 0.409, 0.413, 0.405, 0.121, 0.138, 0.074, 0.397, 0.381, 0.293, 0.436, 0.329, 0.25, -0.016, 0.227, 0.446, 0.342, 0.217, 0.286, 0.207, 0.168, 0.583, 0.249, 0.334, 0.223, 0.176, -0.027, 0.392, 0.213, 0.279, 0.473, 0.242, 0.432, 0.261, 0.139, 0.229, 0.049, 0.171, 0.229, 0.695, 0.255, 0.528, 0.245, 0.164, 0.244, 0.44, 0.207, 0.439, 0.436, -0.152, 0.08, 0.455, 0.568, -0.091, 0.353, 0.137, -0.045, 0.266, 0.097, 0.553, 0.309, 0.138, 0.428, 0.222, 0.324, 0.626, 0.129, 0.998, -0.075, 0.295, 0.611, 0.249, 0.045, 0.158, 0.262, 0.158, 0.028, 0.281, 0.487, 0.261, 0.234, 0.168, 0.402]}}};
+
+function cssVar(n){return getComputedStyle(document.documentElement).getPropertyValue(n).trim();}
+
+function drawStrip(id, w, b, opts){
+  var cv = document.getElementById(id); if(!cv) return;
+  var ctx = cv.getContext('2d');
+  var W = cv.width, H = cv.height;
+  ctx.clearRect(0,0,W,H);
+  var all = w.concat(b);
+  var lo = Math.min.apply(null, all), hi = Math.max.apply(null, all);
+  var pad = (hi-lo)*0.04; lo-=pad; hi+=pad;
+  var X = function(v){return (v-lo)/(hi-lo)*(W-40)+20;};
+  var thr = opts && opts.thr;
+  // 中轴
+  ctx.strokeStyle = cssVar('--line2'); ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(0,H/2); ctx.lineTo(W,H/2); ctx.stroke();
+  function dots(arr, color, yBase, seedMul){
+    for(var i=0;i<arr.length;i++){
+      var jitter = Math.sin(i*seedMul)*0.5+0.5;      // 确定性抖动
+      var y = yBase + (jitter-0.5)*(H*0.30);
+      var v = arr[i];
+      ctx.globalAlpha = (thr!=null && ((yBase<H/2)!=(v>=thr))) ? 0.85 : 0.85;
+      if(thr!=null) ctx.globalAlpha = 0.85;
+      ctx.fillStyle = color;
+      ctx.beginPath(); ctx.arc(X(v), y, 4.5, 0, 7); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
+  dots(w, cssVar('--normal'), H*0.72, 12.9898);
+  dots(b, cssVar('--fraud'),  H*0.28, 78.233);
+  if(thr!=null){
+    ctx.strokeStyle = cssVar('--warn'); ctx.lineWidth = 3;
+    ctx.setLineDash([8,6]);
+    ctx.beginPath(); ctx.moveTo(X(thr),6); ctx.lineTo(X(thr),H-6); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = cssVar('--warn');
+    ctx.font = '700 20px ui-monospace, Menlo, monospace';
+    ctx.textAlign = X(thr) > W-170 ? 'right' : 'left';
+    ctx.fillText('阈值 '+thr.toFixed(2), X(thr)+(X(thr)>W-170?-8:8), 26);
+  }
+  return {lo:lo, hi:hi};
+}
+
+var T = D.temporal;
+var r = drawStrip('cv-main', T.w, T.b, null);
+document.getElementById('ax-lo').textContent = r.lo.toFixed(1);
+document.getElementById('ax-hi').textContent = r.hi.toFixed(1);
+
+// 三档
+drawStrip('cv-rand', D.demo.rand.w, D.demo.rand.b, null);
+drawStrip('cv-mid',  D.demo.mid.w,  D.demo.mid.b,  null);
+drawStrip('cv-top',  T.w, T.b, null);
+
+// 滑块
+var all = T.w.concat(T.b);
+var LO = Math.min.apply(null, all), HI = Math.max.apply(null, all);
+var slider = document.getElementById('thr');
+function pct(x){return (x*100).toFixed(1)+'%';}
+function quantile(arr, q){
+  var s = arr.slice().sort(function(a,b){return a-b;});
+  return s[Math.min(s.length-1, Math.floor(q*s.length))];
+}
+function update(){
+  var t = LO + (HI-LO)*slider.value/1000;
+  drawStrip('cv-thr', T.w, T.b, {thr:t});
+  var catchB = T.b.filter(function(v){return v>=t;}).length;
+  var fpW = T.w.filter(function(v){return v>=t;}).length;
+  document.getElementById('thr-v').textContent = t.toFixed(2);
+  document.getElementById('st-catch').textContent =
+    catchB+'/'+T.b.length+' ('+pct(catchB/T.b.length)+')';
+  document.getElementById('st-miss').textContent = (T.b.length-catchB)+' 个';
+  document.getElementById('st-fp').textContent =
+    fpW+'/'+T.w.length+' ('+pct(fpW/T.w.length)+')';
+}
+slider.addEventListener('input', update);
+document.querySelectorAll('.presets button').forEach(function(btn){
+  btn.addEventListener('click', function(){
+    var t;
+    if(btn.dataset.p==='fpr1') t = quantile(T.w, 0.99);
+    else if(btn.dataset.p==='fpr5') t = quantile(T.w, 0.95);
+    else t = (quantile(T.w,0.5)+quantile(T.b,0.5))/2;
+    slider.value = Math.round((t-LO)/(HI-LO)*1000);
+    update();
+  });
+});
+update();
+
+// 主题切换时重绘
+try{
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(){
+    drawStrip('cv-main', T.w, T.b, null);
+    drawStrip('cv-rand', D.demo.rand.w, D.demo.rand.b, null);
+    drawStrip('cv-mid',  D.demo.mid.w,  D.demo.mid.b,  null);
+    drawStrip('cv-top',  T.w, T.b, null);
+    update();
+  });
+}catch(e){}
+new MutationObserver(function(){
+  drawStrip('cv-main', T.w, T.b, null);
+  drawStrip('cv-rand', D.demo.rand.w, D.demo.rand.b, null);
+  drawStrip('cv-mid',  D.demo.mid.w,  D.demo.mid.b,  null);
+  drawStrip('cv-top',  T.w, T.b, null);
+  update();
+}).observe(document.documentElement, {attributes:true, attributeFilter:['data-theme']});
+</script>

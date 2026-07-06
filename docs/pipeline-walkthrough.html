@@ -1,0 +1,380 @@
+<title>全流程逐步拆解 · 从一条 JSON 到一个风险分</title>
+<style>
+:root{
+  --bg:#F5F7F6; --surface:#FFFFFF; --ink:#1B2723; --ink2:#5A6B66; --ink3:#8A9893;
+  --line:#E1E7E4; --line2:#CBD5D1;
+  --normal:#00997C; --normal-soft:rgba(0,153,124,.10);
+  --fraud:#C24A32; --fraud-soft:rgba(194,74,50,.10);
+  --warn:#9A6B1C; --warn-soft:rgba(154,107,28,.12);
+  --code-bg:#EEF2F0;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#121816; --surface:#1A2320; --ink:#E4EBE8; --ink2:#93A29C; --ink3:#6C7B76;
+    --line:#2A3531; --line2:#3A4744;
+    --normal:#26A69A; --normal-soft:rgba(38,166,154,.14);
+    --fraud:#E0704F; --fraud-soft:rgba(224,112,79,.14);
+    --warn:#D9A03F; --warn-soft:rgba(217,160,63,.15);
+    --code-bg:#222D29;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#121816; --surface:#1A2320; --ink:#E4EBE8; --ink2:#93A29C; --ink3:#6C7B76;
+  --line:#2A3531; --line2:#3A4744;
+  --normal:#26A69A; --normal-soft:rgba(38,166,154,.14);
+  --fraud:#E0704F; --fraud-soft:rgba(224,112,79,.14);
+  --warn:#D9A03F; --warn-soft:rgba(217,160,63,.15);
+  --code-bg:#222D29;
+}
+:root[data-theme="light"]{
+  --bg:#F5F7F6; --surface:#FFFFFF; --ink:#1B2723; --ink2:#5A6B66; --ink3:#8A9893;
+  --line:#E1E7E4; --line2:#CBD5D1;
+  --normal:#00997C; --normal-soft:rgba(0,153,124,.10);
+  --fraud:#C24A32; --fraud-soft:rgba(194,74,50,.10);
+  --warn:#9A6B1C; --warn-soft:rgba(154,107,28,.12);
+  --code-bg:#EEF2F0;
+}
+*{box-sizing:border-box}
+body{margin:0; background:var(--bg); color:var(--ink);
+  font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  font-size:15.5px; line-height:1.75}
+.wrap{max-width:960px; margin:0 auto; padding:46px 24px 80px}
+h1,h2,h3{font-family:"Songti SC","STSong","Noto Serif SC",serif; text-wrap:balance; line-height:1.3}
+h1{font-size:32px; margin:8px 0 14px}
+h2{font-size:23px; margin:0 0 4px}
+h3{font-size:16.5px; margin:0 0 8px}
+p{margin:0 0 12px}
+.eyebrow{font-size:12px; letter-spacing:.18em; color:var(--ink2)}
+.lede{color:var(--ink2); max-width:48em}
+.mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace; font-variant-numeric:tabular-nums}
+code{background:var(--code-bg); padding:1px 6px; border-radius:4px;
+  font-family:ui-monospace,"SF Mono",Menlo,monospace; font-size:.88em}
+pre{background:var(--code-bg); border:1px solid var(--line); border-radius:8px;
+  padding:12px 16px; overflow-x:auto; font-size:12.5px; line-height:1.6;
+  font-family:ui-monospace,"SF Mono",Menlo,monospace}
+section{margin-top:52px; scroll-margin-top:64px}
+.sec-head{display:flex; align-items:baseline; gap:12px;
+  border-bottom:2px solid var(--ink); padding-bottom:8px; margin-bottom:16px}
+.sec-no{font-family:ui-monospace,"SF Mono",Menlo,monospace; font-size:13px;
+  color:var(--surface); background:var(--ink); padding:2px 10px; border-radius:6px;
+  white-space:nowrap}
+.sec-sub{color:var(--ink2); font-size:14px; margin-top:2px}
+.card{background:var(--surface); border:1px solid var(--line); border-radius:10px;
+  padding:18px 20px; margin:14px 0}
+.callout{border-left:3px solid var(--warn); background:var(--warn-soft);
+  border-radius:0 8px 8px 0; padding:12px 18px; margin:16px 0}
+.callout.fraud{border-left-color:var(--fraud); background:var(--fraud-soft)}
+.callout.good{border-left-color:var(--normal); background:var(--normal-soft)}
+.callout p:last-child{margin-bottom:0}
+.why{font-size:13.5px; color:var(--ink2); border-top:1px dashed var(--line2);
+  margin-top:12px; padding-top:10px}
+.why b{color:var(--ink)}
+table{border-collapse:collapse; width:100%; font-size:13px}
+.tbl-wrap{overflow-x:auto; margin:12px 0}
+th{text-align:left; font-weight:600; color:var(--ink3); font-size:11.5px;
+  letter-spacing:.04em; border-bottom:1.5px solid var(--line2);
+  padding:6px 10px 6px 0; white-space:nowrap}
+td{border-bottom:1px solid var(--line); padding:5px 10px 5px 0;
+  vertical-align:top; white-space:nowrap}
+td.num,th.num{text-align:right; font-family:ui-monospace,"SF Mono",Menlo,monospace;
+  font-variant-numeric:tabular-nums}
+td.enc{font-family:ui-monospace,"SF Mono",Menlo,monospace; font-size:12px;
+  color:var(--ink2)}
+tr.hl td{background:var(--normal-soft)}
+tr.hl-bad td{background:var(--fraud-soft)}
+tr.hl-warn td{background:var(--warn-soft)}
+.tag{display:inline-block; font-size:11.5px; padding:1px 8px; border-radius:99px;
+  border:1px solid var(--line2); color:var(--ink2); white-space:nowrap}
+.tag.sen{border-color:var(--fraud); color:var(--fraud); background:var(--fraud-soft)}
+.tag.ok{border-color:var(--normal); color:var(--normal); background:var(--normal-soft)}
+nav{display:flex; flex-wrap:wrap; gap:7px; margin:22px 0 6px; position:sticky;
+  top:0; background:var(--bg); padding:10px 0; z-index:5;
+  border-bottom:1px solid var(--line)}
+nav a{text-decoration:none; color:var(--ink2); font-size:12.5px; padding:3px 11px;
+  border:1px solid var(--line2); border-radius:99px; white-space:nowrap}
+nav a:hover{color:var(--ink); border-color:var(--ink3)}
+/* embedding 拼接图 */
+.embed-diagram{display:flex; flex-wrap:wrap; gap:4px; margin:14px 0 6px}
+.embed-diagram .blk{border-radius:6px; padding:7px 4px 5px; text-align:center;
+  color:var(--surface); font-size:10.5px; line-height:1.4; min-width:34px}
+.embed-diagram .blk .d{font-family:ui-monospace,"SF Mono",Menlo,monospace;
+  font-weight:700; font-size:12px; display:block}
+.pred .row{display:grid; grid-template-columns:74px 1fr 92px; align-items:center;
+  gap:10px; margin:5px 0}
+.pred .lbl{font-size:13px; text-align:right; white-space:nowrap}
+.pred .bar{height:13px; border-radius:0 4px 4px 0; background:var(--ink3);
+  opacity:.55; min-width:2px}
+.pred .row.truth .bar{background:var(--fraud); opacity:1}
+.pred .row.truth-ok .bar{background:var(--normal); opacity:1}
+.pred .pv{font-family:ui-monospace,"SF Mono",Menlo,monospace; font-size:12px;
+  color:var(--ink2)}
+/* 分数轴 */
+.axis{position:relative; height:148px; margin:24px 8px 4px}
+.axis .rail{position:absolute; left:0; right:0; top:84px; height:2px;
+  background:var(--line2)}
+.axis .band{position:absolute; height:15px; border-radius:8px}
+.axis .band.w{background:var(--normal-soft); border:1.5px solid var(--normal); top:76px}
+.axis .band.b{background:var(--fraud-soft); border:1.5px solid var(--fraud); top:36px}
+.axis .thr{position:absolute; top:18px; bottom:28px; width:0;
+  border-left:2px dashed var(--warn)}
+.axis .lbl{position:absolute; font-size:11.5px; white-space:nowrap;
+  transform:translateX(-50%); font-family:ui-monospace,"SF Mono",Menlo,monospace}
+.axis .pt{position:absolute; width:11px; height:11px; border-radius:50%;
+  border:2.5px solid var(--surface); transform:translate(-50%,-50%); top:85px}
+.steps-flow{display:flex; flex-wrap:wrap; gap:0; margin:16px 0}
+.steps-flow .s{flex:1 1 100px; background:var(--surface); border:1px solid var(--line);
+  border-radius:8px; padding:8px 10px; margin-right:22px; position:relative;
+  min-width:96px; margin-bottom:8px; font-size:12px; color:var(--ink2)}
+.steps-flow .s b{display:block; color:var(--ink); font-size:12.5px}
+.steps-flow .s::after{content:"→"; position:absolute; right:-18px; top:50%;
+  transform:translateY(-50%); color:var(--ink3)}
+.steps-flow .s:last-child::after{content:""}
+.steps-flow .s:last-child{margin-right:0}
+details{margin:10px 0}
+summary{cursor:pointer; color:var(--ink2); font-size:13px}
+.foot{margin-top:60px; border-top:1px solid var(--line); padding-top:14px;
+  font-size:12.5px; color:var(--ink3)}
+strong{font-weight:600}
+ul,ol{padding-left:1.4em; margin:8px 0}
+li{margin:4px 0}
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">反欺诈 · 处理流程逐步拆解 · 用你自己的数据实算 · 2026-07-03</div>
+  <h1>从一条 JSON 到一个风险分：每一步到底做了什么</h1>
+  <p class="lede">主角是你提供的真实样本 <code>N00010</code>（19 个事件）。STEP 0–3 的每个数字都是在你的数据上实际算出来的；STEP 4–8 是模型环节（4 条样本训不了模型），采用之前实验的真实数值演示机制。每一步都分三块讲：<strong>做什么 → 具体例子 → 为什么这么做</strong>。</p>
+  <div class="steps-flow">
+    <div class="s"><b>0 原始数据</b>格式检查</div>
+    <div class="s"><b>1 全局统计</b>金额分位点</div>
+    <div class="s"><b>2 分桶</b>逐事件离散化</div>
+    <div class="s"><b>3 查表拼接</b>变成向量</div>
+    <div class="s"><b>4 训练</b>学正常语法</div>
+    <div class="s"><b>5 打分</b>逐位置惊讶度</div>
+    <div class="s"><b>6 归一化</b>消难度差异</div>
+    <div class="s"><b>7 池化</b>合成一个分</div>
+    <div class="s"><b>8 阈值</b>命中/放行</div>
+  </div>
+</header>
+
+<nav>
+  <a href="#s0">0 原始数据</a><a href="#s1">1 全局统计</a><a href="#s2">2 分桶</a>
+  <a href="#s3">3 查表拼接</a><a href="#s4">4 训练</a><a href="#s5">5 打分</a>
+  <a href="#s6">6 归一化</a><a href="#s7">7 池化</a><a href="#s8">8 阈值</a>
+  <a href="#notes">给你数据的三个提醒</a>
+</nav>
+
+<!-- ================= STEP 0 ================= -->
+<section id="s0">
+  <div class="sec-head"><span class="sec-no">STEP 0</span>
+    <div><h2>原始数据长什么样</h2><div class="sec-sub">做什么：确认输入格式与字段清单</div></div></div>
+  <p><strong>做什么：</strong>一行 JSON = 一个用户。里面三样东西：用户 ID、标签（训练时只用白样本，标签仅用于评估）、按时间排列的事件列表。</p>
+  <div class="card">
+    <div class="mono" style="font-size:12px; color:var(--ink3)">你的 N00010 · 前 3 个事件（原文）</div>
+<pre>{"user_id": "N00010", "label": 0, "events": [
+  {"type": "登录",   "t": "2024-06-03 08:00:00", "result": "成功"},
+  {"type": "查余额", "t": "2024-06-03 08:27:00"},
+  {"type": "消费",   "t": "2024-06-03 08:36:00", "amount": 167313},
+  ... 共 19 个事件 ]}</pre>
+    <p>扫描全部样本，出现过的字段一共 4 种：<code>type</code>（事件类型）、<code>t</code>（时间戳）、<code>amount</code>（金额，只有资金类事件有）、<code>result</code>（成功/失败，只有操作类事件有）。<strong>没有 channel 和 ip_change</strong> —— 不影响流程，STEP 2 会把缺失字段统一填"不适用"桶。</p>
+  </div>
+  <div class="why"><b>为什么要先做这一步：</b>后面所有处理都依赖"字段清单"。统一 Schema 的原则是：取所有事件字段的<b>并集</b>定义固定布局，某个事件没有的字段填 0 号"不适用"桶——这样登录和消费这种字段完全不同的事件，最终都是同样维度的向量，才能拼成一条序列。</div>
+</section>
+
+<!-- ================= STEP 1 ================= -->
+<section id="s1">
+  <div class="sec-head"><span class="sec-no">STEP 1</span>
+    <div><h2>算全局统计量</h2><div class="sec-sub">做什么：把连续的金额切成 8 个桶的边界</div></div></div>
+  <p><strong>做什么：</strong>把训练集里所有金额从小到大排序，取 7 个等分位点，作为"全局金额桶"的边界。你的样本里共 41 笔金额（3,315 ~ 195,652），实算出的切点：</p>
+  <div class="card">
+    <div class="tbl-wrap"><table>
+      <tr><th>桶号</th><th class="num">1</th><th class="num">2</th><th class="num">3</th><th class="num">4</th><th class="num">5</th><th class="num">6</th><th class="num">7</th></tr>
+      <tr><td>金额范围</td><td class="num">&lt;35,094</td><td class="num">~58,825</td><td class="num">~75,367</td><td class="num">~116,025</td><td class="num">~139,760</td><td class="num">~158,006</td><td class="num">&gt;158,006</td></tr>
+    </table></div>
+    <p class="mono" style="font-size:12.5px; color:var(--ink2)">例：167,313 &gt; 158,006 → 全局桶 7（最高档）；3,315 &lt; 35,094 → 全局桶 1</p>
+  </div>
+  <div class="why"><b>为什么用分位数而不是固定区间：</b>金额分布是长尾的，固定区间会让大部分交易挤在前两个桶。等频分桶保证每个桶的样本量均衡，模型对每个桶都学得动。<b>为什么只能用训练集白样本算：</b>如果把测试黑样本的金额也算进切点，等于把答案的信息泄漏进了预处理（这里为演示用了全部 4 条样本）。</div>
+</section>
+
+<!-- ================= STEP 2 ================= -->
+<section id="s2">
+  <div class="sec-head"><span class="sec-no">STEP 2</span>
+    <div><h2>逐事件分桶——N00010 的 19 个事件全过程</h2><div class="sec-sub">做什么：把每个事件的每个字段变成离散的桶编号</div></div></div>
+  <p><strong>做什么：</strong>对每个事件抽 8 路字段并离散化。其中两个需要先算：<strong>个人基线</strong> = 该用户自己所有金额的中位数 = <span class="mono">66,285</span>；<strong>间隔</strong> = 当前事件时间减上一事件时间。下表是你的 N00010 完整 19 行，左边原始、右边编码结果：</p>
+  <div class="card">
+  <div class="tbl-wrap"><table>
+    <tr><th>#</th><th>时间</th><th>事件</th><th class="num">金额</th><th class="num">间隔</th>
+        <th class="enc">type</th><th class="enc">res</th><th class="enc">ch</th><th class="enc">ip</th>
+        <th class="enc">全局桶</th><th class="enc">个人桶</th><th class="enc">gap桶</th><th class="enc">hour</th></tr>
+    <tr><td>0</td><td class="mono">08:00</td><td>登录</td><td class="num">—</td><td class="num">—</td><td class="enc">0</td><td class="enc">1</td><td class="enc">0</td><td class="enc">0</td><td class="enc">0</td><td class="enc">0</td><td class="enc">8</td><td class="enc">8.0</td></tr>
+    <tr><td>1</td><td class="mono">08:27</td><td>查余额</td><td class="num">—</td><td class="num">27m</td><td class="enc">1</td><td class="enc">0</td><td class="enc">0</td><td class="enc">0</td><td class="enc">0</td><td class="enc">0</td><td class="enc">2</td><td class="enc">8.4</td></tr>
+    <tr class="hl"><td>2</td><td class="mono">08:36</td><td>消费</td><td class="num">167,313</td><td class="num">9m</td><td class="enc">9</td><td class="enc">0</td><td class="enc">0</td><td class="enc">0</td><td class="enc"><b>7</b></td><td class="enc"><b>5</b></td><td class="enc">2</td><td class="enc">8.6</td></tr>
+    <tr><td>3</td><td class="mono">09:05</td><td>消费</td><td class="num">128,780</td><td class="num">29m</td><td class="enc">9</td><td class="enc">0</td><td class="enc">0</td><td class="enc">0</td><td class="enc">5</td><td class="enc">4</td><td class="enc">2</td><td class="enc">9.1</td></tr>
+    <tr><td>4</td><td class="mono">09:13</td><td>还款</td><td class="num">3,315</td><td class="num">8m</td><td class="enc">10</td><td class="enc">0</td><td class="enc">0</td><td class="enc">0</td><td class="enc">1</td><td class="enc">1</td><td class="enc">2</td><td class="enc">9.2</td></tr>
+    <tr><td>5</td><td class="mono">09:36</td><td>消费</td><td class="num">74,637</td><td class="num">23m</td><td class="enc">9</td><td class="enc">0</td><td class="enc">0</td><td class="enc">0</td><td class="enc">3</td><td class="enc">4</td><td class="enc">2</td><td class="enc">9.6</td></tr>
+    <tr><td>6</td><td class="mono">09:56</td><td>查余额</td><td class="num">—</td><td class="num">20m</td><td class="enc">1</td><td class="enc">0</td><td class="enc">0</td><td class="enc">0</td><td class="enc">0</td><td class="enc">0</td><td class="enc">2</td><td class="enc">9.9</td></tr>
+    <tr><td>7</td><td class="mono">10:16</td><td>消费</td><td class="num">115,566</td><td class="num">20m</td><td class="enc">9</td><td class="enc">0</td><td class="enc">0</td><td class="enc">0</td><td class="enc">4</td><td class="enc">4</td><td class="enc">2</td><td class="enc">10.3</td></tr>
+    <tr><td>8</td><td class="mono">10:31</td><td>转入</td><td class="num">48,429</td><td class="num">15m</td><td class="enc">7</td><td class="enc">0</td><td class="enc">0</td><td class="enc">0</td><td class="enc">2</td><td class="enc">3</td><td class="enc">2</td><td class="enc">10.5</td></tr>
+    <tr><td>9</td><td class="mono">10:37</td><td>消费</td><td class="num">66,285</td><td class="num">6m</td><td class="enc">9</td><td class="enc">0</td><td class="enc">0</td><td class="enc">0</td><td class="enc">3</td><td class="enc">3</td><td class="enc">2</td><td class="enc">10.6</td></tr>
+    <tr><td>10</td><td class="mono">10:57</td><td>还款</td><td class="num">30,007</td><td class="num">20m</td><td class="enc">10</td><td class="enc">0</td><td class="enc">0</td><td class="enc">0</td><td class="enc">1</td><td class="enc">2</td><td class="enc">2</td><td class="enc">10.9</td></tr>
+    <tr class="hl-warn"><td>11</td><td class="mono">11:04</td><td>解绑卡 <span class="tag sen">敏感</span></td><td class="num">—</td><td class="num">7m</td><td class="enc">5</td><td class="enc"><b>2</b></td><td class="enc">0</td><td class="enc">0</td><td class="enc">0</td><td class="enc">0</td><td class="enc">2</td><td class="enc">11.1</td></tr>
+    <tr><td>12</td><td class="mono">11:24</td><td>消费</td><td class="num">19,520</td><td class="num">20m</td><td class="enc">9</td><td class="enc">0</td><td class="enc">0</td><td class="enc">0</td><td class="enc">1</td><td class="enc">2</td><td class="enc">2</td><td class="enc">11.4</td></tr>
+    <tr><td>13</td><td class="mono">11:47</td><td>登录</td><td class="num">—</td><td class="num">23m</td><td class="enc">0</td><td class="enc">1</td><td class="enc">0</td><td class="enc">0</td><td class="enc">0</td><td class="enc">0</td><td class="enc">2</td><td class="enc">11.8</td></tr>
+    <tr><td>14</td><td class="mono">11:56</td><td>转入</td><td class="num">39,211</td><td class="num">9m</td><td class="enc">7</td><td class="enc">0</td><td class="enc">0</td><td class="enc">0</td><td class="enc">2</td><td class="enc">3</td><td class="enc">2</td><td class="enc">11.9</td></tr>
+    <tr><td>15</td><td class="mono">12:26</td><td>查余额</td><td class="num">—</td><td class="num">30m</td><td class="enc">1</td><td class="enc">0</td><td class="enc">0</td><td class="enc">0</td><td class="enc">0</td><td class="enc">0</td><td class="enc">2</td><td class="enc">12.4</td></tr>
+    <tr><td>16</td><td class="mono">12:49</td><td>消费</td><td class="num">79,748</td><td class="num">23m</td><td class="enc">9</td><td class="enc">0</td><td class="enc">0</td><td class="enc">0</td><td class="enc">4</td><td class="enc">4</td><td class="enc">2</td><td class="enc">12.8</td></tr>
+    <tr><td>17</td><td class="mono">12:56</td><td>登录</td><td class="num">—</td><td class="num">7m</td><td class="enc">0</td><td class="enc">1</td><td class="enc">0</td><td class="enc">0</td><td class="enc">0</td><td class="enc">0</td><td class="enc">2</td><td class="enc">12.9</td></tr>
+    <tr class="hl-warn"><td>18</td><td class="mono">13:04</td><td>登录</td><td class="num">—</td><td class="num">8m</td><td class="enc">0</td><td class="enc"><b>2</b></td><td class="enc">0</td><td class="enc">0</td><td class="enc">0</td><td class="enc">0</td><td class="enc">2</td><td class="enc">13.1</td></tr>
+  </table></div>
+  <p class="small" style="font-size:12.5px; color:var(--ink2)">桶含义 · <b>res</b>: 0=不适用 1=成功 2=失败 · <b>ch/ip</b>: 全 0 = 你的数据缺这两个字段 · <b>gap桶</b>: 0=≤1m 1=1-5m 2=5-30m 3=0.5-1h 4=1-6h 5=6-24h 6=1-7d 7=&gt;7d 8=首事件 · <b>个人桶</b>: 金额÷66,285 的比值按 [0.25, 0.5, 1, 2, 4, 8] 切档</p>
+  </div>
+  <p>两个值得看的例子（表中高亮行）：</p>
+  <ul>
+    <li><strong>#2 消费 167,313</strong>：全局桶 7（全局也算大额）+ 个人桶 5（是他自己基线的 2.5 倍）——两个桶一起，模型同时知道"这笔在全社会算大、在他自己身上也偏大"；</li>
+    <li><strong>#11 解绑卡·失败</strong> 和 <strong>#18 登录·失败</strong>：res=2。你的数据里 result 字段是有信息的，这正是编码消融里价值 +0.22 AUC 的那一层信号的载体。</li>
+  </ul>
+  <div class="why"><b>为什么要离散化而不用原始数值：</b>三个原因。① 这些桶号后面既是<b>输入</b>也是<b>预测目标</b>——"猜金额档"是 8 选 1 的分类题，良定且稳健；② 长尾金额直接进网络会被极端值主导；③ 桶号查 Embedding 表，让模型给"大额"学出丰富的语义向量，而不是一个标量。</div>
+</section>
+
+<!-- ================= STEP 3 ================= -->
+<section id="s3">
+  <div class="sec-head"><span class="sec-no">STEP 3</span>
+    <div><h2>查表拼接：桶号 → 64 维向量</h2><div class="sec-sub">做什么：每路字段查自己的 Embedding 表，拼起来压缩</div></div></div>
+  <p><strong>做什么：</strong>以 #2 那笔消费为例，8 个桶号各查各的表（表里的向量是训练中学出来的），拼接后过一层线性投影：</p>
+  <div class="card">
+    <p class="mono" style="font-size:13px">输入索引：type=9(消费) · res=0 · ch=0 · ip=0 · 全局桶=7 · 个人桶=5 · gap桶=2 · hour=8.6</p>
+    <div class="embed-diagram">
+      <div class="blk" style="flex:32; background:var(--normal)"><span class="d">32维</span>type 表<br>12×32</div>
+      <div class="blk" style="flex:4; background:var(--ink3)"><span class="d">4</span>res<br>3×4</div>
+      <div class="blk" style="flex:8; background:var(--ink3)"><span class="d">8</span>ch<br>4×8</div>
+      <div class="blk" style="flex:4; background:var(--ink3)"><span class="d">4</span>ip<br>3×4</div>
+      <div class="blk" style="flex:8; background:var(--normal)"><span class="d">8</span>全局桶<br>8×8</div>
+      <div class="blk" style="flex:16; background:var(--fraud)"><span class="d">16维</span>个人桶<br>8×16</div>
+      <div class="blk" style="flex:16; background:var(--normal)"><span class="d">16维</span>gap 表<br>9×16</div>
+      <div class="blk" style="flex:8; background:var(--ink3)"><span class="d">8</span>hour<br>sin/cos</div>
+    </div>
+    <p class="mono" style="font-size:13px; margin-top:8px">拼接 = 96 维 → Linear(96→64) → 这个事件的 64 维输入向量</p>
+    <p>19 个事件都这么处理 → 得到 <code>[19 × 64]</code> 的矩阵，这就是 Transformer 的输入。缺失字段（ch=0/ip=0）查到的是 0 号"不适用"向量——它<strong>也是学出来的</strong>，不是数字零。</p>
+  </div>
+  <div class="why"><b>为什么是"各查各表再拼接"而不是拼成一个词</b>（Token 编码）：拼成 <code>消费_大额_APP</code> 这种单词会让词表变成字段组合的笛卡尔积，稀有组合学不好；更致命的是后面没法做"只遮金额猜金额"这种字段级操作。字段解耦是 STEP 4/5 一切玩法的前提。<b>为什么拼接后还要投影：</b>把 96 维压到统一的模型宽度 64，数学上"拼接+线性投影"的表达力覆盖"各自投影后相加"，实现还最简单（实验验证过，见 ARCH_REPORT）。</div>
+</section>
+
+<!-- ================= STEP 4 ================= -->
+<section id="s4">
+  <div class="sec-head"><span class="sec-no">STEP 4</span>
+    <div><h2>训练：只用白样本学"正常语法"</h2><div class="sec-sub">做什么：让模型做预测题，做多了就掌握了正常行为的规律</div></div></div>
+  <p><strong>做什么：</strong>把几千个白样本用户的矩阵喂给 Transformer，出题方式按数据形状选（这是实验定下的三档配置之一）：</p>
+  <div class="tbl-wrap"><table>
+    <tr><th>数据形状</th><th>出题方式</th><th>具体动作</th><th>验证效果</th></tr>
+    <tr class="hl"><td><strong>操作流（你的数据属于这类）</strong></td><td><strong>自回归 + 时间偏置</strong></td><td>看位置 0..i 的所有事件，预测第 i+1 个事件的 [类型/间隔/结果/个人金额档] 四个头；注意力里加"时间差越近权重加成越大"的可学偏置</td><td class="num">0.984</td></tr>
+    <tr><td>资金流（转账流水）</td><td>整事件遮罩</td><td>随机遮 15% 事件，用前后文猜回来</td><td class="num">0.904</td></tr>
+    <tr><td>消费流（卡交易）</td><td>字段级遮罩</td><td>只遮金额、类别可见，学 P(金额|类别,时段)</td><td class="num">0.886</td></tr>
+  </table></div>
+  <div class="card">
+    <p><strong>具体例子（自回归出题）：</strong>模型看到 N00010 的前 3 个事件：</p>
+    <p class="mono" style="font-size:13px">[登录·成功·08:00] → [查余额·+27m] → [消费·167,313·+9m] → 请预测第 4 个事件的：类型？间隔档？结果？个人金额档？</p>
+    <p style="margin-bottom:0">真实答案是 [消费·128,780·+29m]。模型每答一题，就按答错程度（交叉熵）更新参数。几千个用户 × 每人几十题 × 30 轮之后，它就知道了"正常用户在什么上下文之后会做什么"。<strong>全程没用一个黑标签。</strong></p>
+  </div>
+  <div class="why"><b>为什么自回归适合操作流：</b>盗号是一条因果链（失败登录→换设备→改密→转出），"下一步"是可预测的，攻击链起点会成为最大惊讶点；完形填空能看到"后文"，语境泄漏会钝化惊讶（实验：自回归 0.974 vs 遮罩 0.926）。<b>为什么只用白样本：</b>这就是方案的核心——不需要黑标签；而且实测训练集混入 10% 黑样本 AUC 几乎不掉（0.9605→0.9598），所以 unlabeled 数据可直接当白样本用。</div>
+</section>
+
+<!-- ================= STEP 5 ================= -->
+<section id="s5">
+  <div class="sec-head"><span class="sec-no">STEP 5</span>
+    <div><h2>打分：逐位置"审问"待检用户</h2><div class="sec-sub">做什么：对每个位置记录模型的惊讶程度</div></div></div>
+  <p><strong>做什么：</strong>把待检用户的序列过一遍模型，每个位置得到一个预测分布，对照真实事件算交叉熵（CE）= 惊讶度。自回归架构下这一步<strong>单趟完成</strong>，位置 i 的惊讶度 = "看了前 i 个事件后，模型给第 i+1 个真实事件多少概率"。</p>
+  <div class="card">
+    <p><strong>真实例子</strong>（temporal 实验的模型真实输出，展示两种典型局面）：</p>
+    <p style="margin:10px 0 4px">① 正常局面——白样本会话中的一个位置，真实事件是 <span class="tag ok">消费</span>：</p>
+    <div class="pred">
+      <div class="row truth-ok"><div class="lbl">消费</div><div><div class="bar" style="width:100%"></div></div><div class="pv">27.2% ✓ 命中</div></div>
+      <div class="row"><div class="lbl">登录</div><div><div class="bar" style="width:94%"></div></div><div class="pv">25.5%</div></div>
+      <div class="row"><div class="lbl">查余额</div><div><div class="bar" style="width:67%"></div></div><div class="pv">18.2%</div></div>
+    </div>
+    <p class="mono" style="font-size:12.5px; color:var(--ink2)">→ 第一预测就是真实答案，CE 低，这个位置"正常"</p>
+    <p style="margin:14px 0 4px">② 异常局面——黑样本爆发链里的位置，真实事件是 <span class="tag sen">改限额</span>（它前面 149 秒是改密码）：</p>
+    <div class="pred">
+      <div class="row"><div class="lbl">消费</div><div><div class="bar" style="width:100%"></div></div><div class="pv">28.9%</div></div>
+      <div class="row"><div class="lbl">登录</div><div><div class="bar" style="width:88%"></div></div><div class="pv">25.5%</div></div>
+      <div class="row truth"><div class="lbl">改限额</div><div><div class="bar" style="width:4.3%"></div></div><div class="pv">1.25% ← 真实</div></div>
+    </div>
+    <p class="mono" style="font-size:12.5px; color:var(--ink2); margin-bottom:0">→ 模型以为小间隔上下文里该是购物会话，真实事件只给了 1.25% 概率，CE 高，"惊讶"</p>
+  </div>
+  <div class="why"><b>为什么惊讶度能当欺诈信号：</b>模型只学过正常语法。欺诈行为违反语法（敏感操作不该挤在小间隔里 / 金额不该是他基线的 10 倍 / 登录不该连续失败），违反多少、惊讶多少。这个惊讶度是<b>逐位置</b>的，天然指认"具体哪几步可疑"。</div>
+</section>
+
+<!-- ================= STEP 6 ================= -->
+<section id="s6">
+  <div class="sec-head"><span class="sec-no">STEP 6</span>
+    <div><h2>难度归一化：z-score</h2><div class="sec-sub">做什么：消掉"这个位置本来就难猜"的干扰</div></div></div>
+  <div class="callout fraud"><p><strong>这是全项目踩过的最大的坑：跳过这一步，分数方向是反的（AUC 0.32）。</strong>原因：爆发窗口全是小间隔，形态像购物会话，本来就"好猜"；孤立事件间隔几小时到几天，本来就"难猜"。直接平均 CE，黑样本反而显得更正常。</p></div>
+  <p><strong>做什么：</strong>用训练白样本统计"每个间隔桶的 CE 均值 μ 和标准差 σ"（下表是实验中的真实统计值），然后每个位置换算成 z 分：</p>
+  <div class="card">
+    <p class="mono" style="font-size:14px; text-align:center">z = (该位置的CE − 同间隔桶的正常均值μ) ÷ 同桶标准差σ</p>
+    <div class="tbl-wrap"><table>
+      <tr><th>间隔桶</th><th class="num">≤1m</th><th class="num">1-5m</th><th class="num">5-30m</th><th class="num">0.5-1h</th><th class="num">1-6h</th><th class="num">6-24h</th></tr>
+      <tr><td>正常的类型CE均值 μ</td><td class="num">1.71</td><td class="num">1.71</td><td class="num">1.72</td><td class="num">2.23</td><td class="num">2.31</td><td class="num">2.34</td></tr>
+    </table></div>
+    <p style="margin-bottom:0"><strong>例子：</strong>某位置在"≤1m"桶里 CE=4.8 → z=(4.8−1.71)/0.67≈<b>+4.6</b>（比同难度正常位置惊讶 4.6 个标准差，高度可疑）；另一位置在"0.5-1h"桶里 CE=2.4 → z≈+0.2（虽然 CE 绝对值不低，但那个难度下这很正常）。</p>
+  </div>
+  <div class="why"><b>为什么按间隔桶统计：</b>间隔是"预测难度"的最大来源。z 分回答的不是"惊讶多少"，而是"<b>比同等难度下的正常人多惊讶多少</b>"——这才是欺诈信号。归一化之后 AUC 从 0.32 反转到 0.76。</div>
+</section>
+
+<!-- ================= STEP 7 ================= -->
+<section id="s7">
+  <div class="sec-head"><span class="sec-no">STEP 7</span>
+    <div><h2>池化：一串 z 分 → 一个风险分</h2><div class="sec-sub">做什么：按欺诈形态选聚合方式</div></div></div>
+  <p><strong>做什么：</strong>每个用户现在有一串逐位置 z 分（N00010 会有 19 个），要合成一个数。规则：<strong>异常是局部的用 top-k，异常是整体的用平均</strong>。你的操作流数据属于前者——盗号只污染序列里的一小段。</p>
+  <div class="card">
+    <p><strong>真实例子（temporal 实验）：</strong></p>
+    <div class="tbl-wrap"><table>
+      <tr><th></th><th>逐位置 z 分最高的 5 个</th><th class="num">top-5 平均</th></tr>
+      <tr class="hl-bad"><td>黑样本 B_0291</td><td class="mono">4.65(解绑卡), 4.13(绑卡), 3.98(改限额), 3.81(借款), 3.70(借款)</td><td class="num"><b>4.05</b></td></tr>
+      <tr class="hl"><td>白样本 W_0485</td><td class="mono">3.73(借款), 2.02(解绑卡), 1.72(绑卡), 1.69(绑卡), 1.42(设备变更)</td><td class="num"><b>2.12</b></td></tr>
+    </table></div>
+    <p style="margin-bottom:0">注意 W_0485 有一个 3.73 的单点高分（会话里巧合夹了笔借款）——<strong>这就是取 top-5 平均而不是 top-1 的原因</strong>：单个巧合拉不动分数，要成串的异常才能过线。而 B_0291 的前 5 名里 3 个直接落在爆发链上，这 5 个位置同时就是给审核员的"可疑操作清单"。</p>
+  </div>
+  <div class="why"><b>为什么 k=5 而不是别的：</b>实验里 k∈[3,10] 结果都在 0.94 以上，对 k 不敏感；上线前在自己的验证集上确认一次即可。<b>什么时候用平均：</b>以太坊钓鱼账户整个账户都是作案工具，每笔都异常——平均(0.904) 优于 top-k(0.875)。两种分数都算、当两个通道用最稳。</div>
+</section>
+
+<!-- ================= STEP 8 ================= -->
+<section id="s8">
+  <div class="sec-head"><span class="sec-no">STEP 8</span>
+    <div><h2>阈值决策：命中还是放行</h2><div class="sec-sub">做什么：按业务能接受的误报率在分数轴上切一刀</div></div></div>
+  <p><strong>做什么：</strong>拿一批白样本算分，取它们的 99 分位当阈值（= 只误伤 1% 正常用户）。真实实验里这个值是 <span class="mono">3.52</span>：</p>
+  <div class="card">
+    <div class="axis">
+      <div class="rail"></div>
+      <div class="band b" style="left:54%; width:32%"></div>
+      <div class="lbl" style="left:70%; top:18px; color:var(--fraud)">黑样本分布 p10–p90</div>
+      <div class="band w" style="left:12%; width:44%"></div>
+      <div class="lbl" style="left:40%; top:118px; color:var(--normal)">白样本分布 p10–p90</div>
+      <div class="thr" style="left:65%"></div>
+      <div class="lbl" style="left:65%; top:2px; color:var(--warn)">阈值 3.52 = 白样本 p99</div>
+      <div class="pt" style="left:20%; background:var(--normal)"></div>
+      <div class="lbl" style="left:17%; top:100px; color:var(--normal)">W_0485=2.12 →放行</div>
+      <div class="pt" style="left:82%; background:var(--fraud)"></div>
+      <div class="lbl" style="left:82%; top:56px; color:var(--fraud)">B_0291=4.05 →命中⚑</div>
+    </div>
+    <p style="margin-bottom:0">这一刀切下去：误报率 1%，能抓住 70.8% 的黑样本（temporal 实测）。想抓更多就把刀左移，用误报换召回——和评分卡的运营方式完全一致。命中的用户连同 top-5 可疑位置一起推给人工审核，<strong>不建议直接自动处置</strong>。</p>
+  </div>
+  <div class="why"><b>为什么阈值定在白样本分位数上而不是固定数值：</b>分数的绝对量纲随数据/模型变化，但"白样本的 p99"永远对应 1% 误报——业务含义稳定。阈值需要定期用新的白样本重算，防漂移。</div>
+</section>
+
+<!-- ================= 提醒 ================= -->
+<section id="notes">
+  <div class="sec-head"><span class="sec-no">备注</span>
+    <div><h2>针对你这份数据的三个提醒</h2><div class="sec-sub">走查你的样本时发现的，拿全量数据前先确认</div></div></div>
+  <ol>
+    <li><strong>个人基线要换滚动窗口。</strong>演示里 N00010 的基线 66,285 是从他这 19 个事件自己算的；正式上线应该用"该用户过去 90 天的滚动中位数"，序列短时基线不稳。</li>
+    <li><strong>间隔信息几乎恒定。</strong>19 个事件里 18 个落在同一个 gap 桶（5-30m）；4 个用户全部从 08:00:00 整点开始。若全量数据如此，STEP 6 的分桶要改成分钟级细分，且"起始时间"可能成为泄漏捷径——需要先看黑样本和生成逻辑。</li>
+    <li><strong>金额疑似均匀随机。</strong>还款大于借款、16 万的消费和 3 千的还款无规律并存。若属实，金额两路桶都不会有信号——判别信号到底设计在哪一层，决定这套流程能跑出什么分数。</li>
+  </ol>
+</section>
+
+<div class="foot">
+  <p>STEP 0–3 的全部数值由 <code>反欺诈/walkthrough.py</code> 在你提供的 <code>user_sample.jsonl</code> 上实算；
+  STEP 4–8 的机制数值来自 temporal 实验（<code>EXPERIMENT_MEM.md</code>）与架构/编码消融（<code>ARCH_REPORT.md</code> / <code>ENCODING_REPORT.md</code>）。
+  配套页面：方案全景（含端到端实例）、六数据集序列实样。</p>
+</div>
+</div>

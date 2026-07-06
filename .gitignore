@@ -1,0 +1,10 @@
+# 大文件: 原始开源数据集(脚本可重新下载)
+card_transaction.v1.csv
+transactions.tgz
+eth_phishing/
+tabformer_windows.pkl
+
+# Python
+__pycache__/
+*.pyc
+.DS_Store
