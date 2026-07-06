@@ -1,0 +1,309 @@
+<title>无监督学习方案详解 · 自监督异常检测</title>
+<style>
+:root{
+  --bg:#F5F7F6; --surface:#FFFFFF; --ink:#1B2723; --ink2:#5A6B66; --ink3:#8A9893;
+  --line:#E1E7E4; --line2:#CBD5D1;
+  --normal:#00997C; --normal-soft:rgba(0,153,124,.10);
+  --fraud:#C24A32; --fraud-soft:rgba(194,74,50,.10);
+  --warn:#9A6B1C; --warn-soft:rgba(154,107,28,.12);
+  --code-bg:#EEF2F0;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#121816; --surface:#1A2320; --ink:#E4EBE8; --ink2:#93A29C; --ink3:#6C7B76;
+    --line:#2A3531; --line2:#3A4744;
+    --normal:#26A69A; --normal-soft:rgba(38,166,154,.14);
+    --fraud:#E0704F; --fraud-soft:rgba(224,112,79,.14);
+    --warn:#D9A03F; --warn-soft:rgba(217,160,63,.15);
+    --code-bg:#222D29;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#121816; --surface:#1A2320; --ink:#E4EBE8; --ink2:#93A29C; --ink3:#6C7B76;
+  --line:#2A3531; --line2:#3A4744;
+  --normal:#26A69A; --normal-soft:rgba(38,166,154,.14);
+  --fraud:#E0704F; --fraud-soft:rgba(224,112,79,.14);
+  --warn:#D9A03F; --warn-soft:rgba(217,160,63,.15);
+  --code-bg:#222D29;
+}
+:root[data-theme="light"]{
+  --bg:#F5F7F6; --surface:#FFFFFF; --ink:#1B2723; --ink2:#5A6B66; --ink3:#8A9893;
+  --line:#E1E7E4; --line2:#CBD5D1;
+  --normal:#00997C; --normal-soft:rgba(0,153,124,.10);
+  --fraud:#C24A32; --fraud-soft:rgba(194,74,50,.10);
+  --warn:#9A6B1C; --warn-soft:rgba(154,107,28,.12);
+  --code-bg:#EEF2F0;
+}
+*{box-sizing:border-box}
+body{margin:0; background:var(--bg); color:var(--ink);
+  font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  font-size:15.5px; line-height:1.78}
+.wrap{max-width:920px; margin:0 auto; padding:46px 24px 80px}
+h1,h2,h3{font-family:"Songti SC","STSong","Noto Serif SC",serif; text-wrap:balance; line-height:1.3}
+h1{font-size:31px; margin:8px 0 14px}
+h2{font-size:22px; margin:0 0 4px}
+h3{font-size:16px; margin:0 0 8px}
+p{margin:0 0 12px}
+.eyebrow{font-size:12px; letter-spacing:.18em; color:var(--ink2)}
+.lede{color:var(--ink2); max-width:47em}
+.mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace; font-variant-numeric:tabular-nums}
+code{background:var(--code-bg); padding:1px 6px; border-radius:4px;
+  font-family:ui-monospace,"SF Mono",Menlo,monospace; font-size:.88em}
+section{margin-top:54px; scroll-margin-top:64px}
+.sec-head{display:flex; align-items:baseline; gap:12px;
+  border-bottom:2px solid var(--ink); padding-bottom:8px; margin-bottom:16px}
+.sec-no{font-family:ui-monospace,"SF Mono",Menlo,monospace; font-size:13px;
+  color:var(--surface); background:var(--ink); padding:2px 10px; border-radius:6px;
+  white-space:nowrap}
+.sec-sub{color:var(--ink2); font-size:14px; margin-top:2px}
+.card{background:var(--surface); border:1px solid var(--line); border-radius:10px;
+  padding:18px 20px; margin:14px 0}
+.ex{border-left:3px solid var(--normal); background:var(--normal-soft);
+  border-radius:0 8px 8px 0; padding:12px 18px; margin:14px 0}
+.ex .tag-ex{font-size:11px; font-weight:700; letter-spacing:.1em; color:var(--normal)}
+.callout{border-left:3px solid var(--warn); background:var(--warn-soft);
+  border-radius:0 8px 8px 0; padding:12px 18px; margin:16px 0}
+.callout.fraud{border-left-color:var(--fraud); background:var(--fraud-soft)}
+.callout p:last-child,.ex p:last-child{margin-bottom:0}
+table{border-collapse:collapse; width:100%; font-size:13.5px}
+.tbl-wrap{overflow-x:auto; margin:12px 0}
+th{text-align:left; font-weight:600; color:var(--ink3); font-size:12px;
+  letter-spacing:.04em; border-bottom:1.5px solid var(--line2);
+  padding:6px 12px 6px 0; white-space:nowrap}
+td{border-bottom:1px solid var(--line); padding:6px 12px 6px 0; vertical-align:top}
+td.num,th.num{text-align:right; font-family:ui-monospace,"SF Mono",Menlo,monospace;
+  font-variant-numeric:tabular-nums; white-space:nowrap}
+tr.hl td{background:var(--normal-soft)}
+tr.hl-bad td{background:var(--fraud-soft)}
+.chips{display:flex; flex-wrap:wrap; gap:10px; margin-top:20px}
+.chip{background:var(--surface); border:1px solid var(--line); border-radius:8px;
+  padding:9px 15px; min-width:140px}
+.chip .v{font-family:ui-monospace,"SF Mono",Menlo,monospace; font-size:20px;
+  font-weight:700; color:var(--normal)}
+.chip .k{font-size:11.5px; color:var(--ink2); margin-top:2px}
+.flow{display:flex; flex-wrap:wrap; gap:0; margin:16px 0}
+.flow .s{flex:1 1 150px; background:var(--surface); border:1px solid var(--line);
+  border-radius:8px; padding:11px 14px; margin-right:24px; position:relative;
+  min-width:150px; margin-bottom:8px}
+.flow .s::after{content:"→"; position:absolute; right:-19px; top:50%;
+  transform:translateY(-50%); color:var(--ink3)}
+.flow .s:last-child::after{content:""}
+.flow .s:last-child{margin-right:0}
+.flow .t{font-weight:600; font-size:14px}
+.flow .d{font-size:12.5px; color:var(--ink2); line-height:1.5}
+.fields{display:flex; flex-wrap:wrap; gap:8px; margin:10px 0}
+.field{background:var(--code-bg); border:1px solid var(--line); border-radius:6px;
+  padding:6px 12px; font-size:12.5px}
+.field b{display:block; font-size:10.5px; color:var(--ink3); letter-spacing:.05em}
+.field span{font-family:ui-monospace,"SF Mono",Menlo,monospace}
+.pred .row{display:grid; grid-template-columns:74px 1fr 96px; align-items:center;
+  gap:10px; margin:5px 0}
+.pred .lbl{font-size:13px; text-align:right; white-space:nowrap}
+.pred .bar{height:13px; border-radius:0 4px 4px 0; background:var(--ink3);
+  opacity:.55; min-width:2px}
+.pred .row.truth .bar{background:var(--fraud); opacity:1}
+.pred .row.truth-ok .bar{background:var(--normal); opacity:1}
+.pred .pv{font-family:ui-monospace,"SF Mono",Menlo,monospace; font-size:12px; color:var(--ink2)}
+nav{display:flex; flex-wrap:wrap; gap:7px; margin:20px 0 6px; position:sticky; top:0;
+  background:var(--bg); padding:10px 0; z-index:5; border-bottom:1px solid var(--line)}
+nav a{text-decoration:none; color:var(--ink2); font-size:12.5px; padding:3px 11px;
+  border:1px solid var(--line2); border-radius:99px; white-space:nowrap}
+nav a:hover{color:var(--ink); border-color:var(--ink3)}
+.why{font-size:13.5px; color:var(--ink2); border-top:1px dashed var(--line2);
+  margin-top:12px; padding-top:10px}
+.why b{color:var(--ink)}
+.foot{margin-top:60px; border-top:1px solid var(--line); padding-top:14px;
+  font-size:12.5px; color:var(--ink3)}
+strong{font-weight:600}
+ul,ol{padding-left:1.4em; margin:8px 0}
+li{margin:4px 0}
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">反欺诈 · 无监督学习方案详解 · 定稿版 · 2026-07-06</div>
+  <h1>零标签怎么分开黑白：自监督异常检测方案</h1>
+  <p class="lede">全程<strong>不使用任何欺诈标签</strong>。核心思想一句话：只用正常用户的行为数据训练一个"预测行为"的模型，它学会正常规律后，<strong>谁让它频繁预测失败（惊讶），谁就异常</strong>。本页每个例子都来自真实实验数据。</p>
+  <div class="chips">
+    <div class="chip"><div class="v">0.928</div><div class="k">以太坊·全真实数据·零标签</div></div>
+    <div class="chip"><div class="v">0.984</div><div class="k">操作流基准·零标签</div></div>
+    <div class="chip"><div class="v">2/6</div><div class="k">数据集上零标签超过全标签模型</div></div>
+    <div class="chip"><div class="v">93~100%</div><div class="k">零标签达到有标签上限的比例</div></div>
+  </div>
+</header>
+
+<nav>
+  <a href="#s0">总述</a><a href="#s1">① 编码</a><a href="#s2">② 训练目标</a>
+  <a href="#s3">③ 打分三步</a><a href="#s4">④ 融合通道</a><a href="#s5">⑤ 阈值</a>
+  <a href="#s6">原理与证据</a>
+</nav>
+
+<!-- ========== 总述 ========== -->
+<section id="s0">
+  <div class="sec-head"><span class="sec-no">总述</span>
+    <div><h2>方案全景与学名</h2>
+    <div class="sec-sub">为什么叫"自监督"：标准答案来自数据自己，不需要人标</div></div></div>
+  <div class="flow">
+    <div class="s"><div class="t">① 编码</div><div class="d">每个行为事件 → 8 路字段 → 64 维向量</div></div>
+    <div class="s"><div class="t">② 训练</div><div class="d">只用白样本做"预测题"，学会正常行为语法</div></div>
+    <div class="s"><div class="t">③ 打分</div><div class="d">逐位置惊讶度 → 难度归一化 → 池化成风险分</div></div>
+    <div class="s"><div class="t">④ 融合</div><div class="d">静态比例特征走分数级融合补盲区</div></div>
+    <div class="s"><div class="t">⑤ 决策</div><div class="d">白样本 p99 切阈值 → 审核队列(带证据)</div></div>
+  </div>
+  <p>训练标签从哪来？<strong>序列的下一个事件本身就是标准答案</strong>——"看了前 10 个操作，猜第 11 个是什么"，猜完对答案，答案就在数据里。这就是"自监督"：有监督信号，但不需要人工标注，更不需要知道欺诈长什么样。训练数据直接用 unlabeled 用户当白样本——实测混入 10% 欺诈都无损（欺诈模式在训练信号中占比 ~1%，模型来不及把它学成"正常"）。</p>
+</section>
+
+<!-- ========== ① 编码 ========== -->
+<section id="s1">
+  <div class="sec-head"><span class="sec-no">STEP ①</span>
+    <div><h2>编码：行为事件 → 向量</h2>
+    <div class="sec-sub">统一 Schema，8 路字段各查各的 Embedding 表再拼接</div></div></div>
+  <div class="ex"><span class="tag-ex">真实例子 · 来自用户提供的样本数据 N00010</span>
+    <p>原始事件：<code>{"type":"消费", "t":"2024-06-03 08:36:00", "amount":167313}</code></p>
+    <div class="fields">
+      <div class="field"><b>事件类型</b><span>消费 → ID 9</span></div>
+      <div class="field"><b>result</b><span>无此字段 → 0(不适用)</span></div>
+      <div class="field"><b>channel/ip</b><span>缺失 → 0</span></div>
+      <div class="field"><b>全局金额桶</b><span>167,313 &gt; 全体p86分位 → 桶7</span></div>
+      <div class="field"><b>个人金额桶</b><span>÷本人中位66,285=2.5倍 → 桶5</span></div>
+      <div class="field"><b>间隔桶</b><span>距上一事件9分钟 → 桶2(5-30m)</span></div>
+      <div class="field"><b>时刻</b><span>8.6时 → sin/cos</span></div>
+    </div>
+    <p>8 个索引各查各的 Embedding 表（类型表 12×32、个人金额表 8×16……），拼接成 96 维，线性投影到 64 维——这就是一个事件进模型的样子。整条序列 = [事件数 × 64] 的矩阵。</p>
+  </div>
+  <p>两个关键设计：</p>
+  <ul>
+    <li><strong>缺失填"不适用"桶</strong>：登录没有金额、消费没有 result——统一 Schema 让字段不同的事件进同一条序列，缺的查 0 号可学习向量（不是数字零）；</li>
+    <li><strong>个人金额桶是全方案性价比最高的特征</strong>：同样是"转出 5 万"，对基线 500 的人是 100 倍（桶 7 顶格），对基线 5 万的人是 1 倍（桶 3 平常）——"个人基线"直接编进输入。实证：真实卡数据上加它 +3.8pp，逐笔定位 +19pp。</li>
+  </ul>
+</section>
+
+<!-- ========== ② 训练目标 ========== -->
+<section id="s2">
+  <div class="sec-head"><span class="sec-no">STEP ②</span>
+    <div><h2>训练：只用白样本做"预测题"</h2>
+    <div class="sec-sub">按数据形状选三种出题方式——这是几十个实验裁决出的对照表</div></div></div>
+  <div class="tbl-wrap"><table>
+    <tr><th>数据形状</th><th>出题方式</th><th>为什么</th><th class="num">实证</th></tr>
+    <tr class="hl"><td><strong>操作流</strong>（App日志）</td><td><strong>自回归+时间偏置</strong>：只看历史，预测下一事件的[类型/间隔/结果/个人金额档]</td><td>盗号是因果链，"下一步"可预测；只看历史让攻击起点成为最大惊讶</td><td class="num">0.984</td></tr>
+    <tr><td>资金流（转账）</td><td>整事件遮罩：随机遮15%事件用前后文猜回</td><td>异常是账户整体风格，双向上下文即可</td><td class="num">0.904</td></tr>
+    <tr><td>消费流（卡交易）</td><td>字段级遮罩：只遮金额、类别可见，学 P(金额|类别,时段)</td><td>下一笔买什么本质随机；欺诈签名在"字段搭配不对"</td><td class="num">0.886</td></tr>
+  </table></div>
+  <div class="ex"><span class="tag-ex">真实例子 · 自回归出题（操作流）</span>
+    <p class="mono" style="font-size:13px">已见：[登录·成功·08:00] → [查余额·+27m] → [消费·167,313·+9m]<br>
+    请预测第 4 个事件的：类型？间隔档？结果？个人金额档？<br>
+    （标准答案在数据里：[消费·128,780·+29m]——猜错多少，参数就更新多少）</p>
+  </div>
+  <div class="ex"><span class="tag-ex">真实例子 · 字段级遮罩（消费流）</span>
+    <p class="mono" style="font-size:13px">已见：[类别=grocery_pos, 时刻=23:40, 间隔=2h, 金额=<b>???</b>]<br>
+    请预测被遮的金额档。正常用户深夜杂货店消费是小额 → 若真实金额是本人基线 12 倍 → 模型大吃一惊。</p>
+    <p>这个改动在真实卡数据上把 AUC 从 0.557（整事件遮罩，失败）救到 0.886——<strong>出题方式必须匹配数据形状，没有万能题型</strong>。</p>
+  </div>
+  <div class="why"><b>为什么自回归在操作流上赢完形填空（0.974 vs 0.926）：</b>完形填空能看到被遮位置的"后文"，语境泄漏会把惊讶抹平；自回归严格只看历史——连续失败登录突然出现时，模型毫无准备，惊讶最大化。附带好处：打分单趟完成，推理成本只有遮罩法的 1/7。</div>
+</section>
+
+<!-- ========== ③ 打分 ========== -->
+<section id="s3">
+  <div class="sec-head"><span class="sec-no">STEP ③</span>
+    <div><h2>打分三步：惊讶度 → 归一化 → 池化</h2>
+    <div class="sec-sub">全方案技术含量最高的部分，顺序和取舍都是拿失败换来的</div></div></div>
+
+  <h3>第 1 步 · 逐位置算惊讶度（交叉熵）</h3>
+  <div class="ex"><span class="tag-ex">真实例子 · 同一个模型在两种局面下的真实输出</span>
+    <p style="margin-bottom:4px">正常局面——白样本会话中，真实事件是<b>消费</b>：</p>
+    <div class="pred">
+      <div class="row truth-ok"><div class="lbl">消费</div><div><div class="bar" style="width:100%"></div></div><div class="pv">27.2% ✓ 第一预测命中</div></div>
+      <div class="row"><div class="lbl">登录</div><div><div class="bar" style="width:94%"></div></div><div class="pv">25.5%</div></div>
+      <div class="row"><div class="lbl">查余额</div><div><div class="bar" style="width:67%"></div></div><div class="pv">18.2%</div></div>
+    </div>
+    <p style="margin:12px 0 4px">异常局面——黑样本爆发链中（前 149 秒是改密码），真实事件是<b>改限额</b>：</p>
+    <div class="pred">
+      <div class="row"><div class="lbl">消费</div><div><div class="bar" style="width:100%"></div></div><div class="pv">28.9%</div></div>
+      <div class="row"><div class="lbl">登录</div><div><div class="bar" style="width:88%"></div></div><div class="pv">25.5%</div></div>
+      <div class="row truth"><div class="lbl">改限额</div><div><div class="bar" style="width:4.3%"></div></div><div class="pv">1.25% ← 真实事件，惊讶！</div></div>
+    </div>
+    <p>模型以为小间隔上下文里该是购物会话，真实答案只被给了 1.25% 的概率 → 交叉熵高 → 这个位置"可疑"。</p>
+  </div>
+
+  <h3>第 2 步 · 难度归一化（z-norm）</h3>
+  <div class="callout fraud"><p><strong>不做这一步，分数方向是反的（实测 AUC 0.32）。</strong>黑样本的爆发窗口全是小间隔——形态像购物会话，本来就"好猜"；白样本孤立敏感事件间隔几小时到几天，本来就"难猜"。直接平均会得出"黑样本更正常"的荒谬结论。</p></div>
+  <div class="ex"><span class="tag-ex">真实例子 · 白样本训练集各间隔桶的期望惊讶度（实测统计值）</span>
+    <div class="tbl-wrap"><table>
+      <tr><th>间隔桶</th><th class="num">≤1m</th><th class="num">1-5m</th><th class="num">5-30m</th><th class="num">0.5-1h</th><th class="num">1-6h</th><th class="num">6-24h</th></tr>
+      <tr><td>正常CE均值 μ</td><td class="num">1.71</td><td class="num">1.71</td><td class="num">1.72</td><td class="num">2.23</td><td class="num">2.31</td><td class="num">2.34</td></tr>
+    </table></div>
+    <p class="mono" style="text-align:center; font-size:14px">z = (该位置CE − 同间隔桶的μ) ÷ 同桶σ</p>
+    <p>例：≤1m 桶里 CE=4.8 → z≈<b>+4.6</b>（比同难度正常位置惊讶 4.6 个标准差，高度可疑）；0.5-1h 桶里 CE=2.4 → z≈+0.2（那个难度下这很正常）。z 分回答的不是"惊讶多少"，而是"<strong>比同等难度下的正常人多惊讶多少</strong>"。这一步把 0.32 反转到 0.76。</p>
+  </div>
+
+  <h3>第 3 步 · 池化：一串 z 分 → 一个风险分</h3>
+  <p>规则：<strong>异常是局部的用 top-k，异常是整体的用平均</strong>（盗号只污染序列一小段 → top-5；钓鱼账户每笔都是作案 → 全序列平均，实测 0.904 &gt; top-k 的 0.875）。</p>
+  <div class="ex"><span class="tag-ex">真实例子 · 两个真实用户的 top-5</span>
+    <div class="tbl-wrap"><table>
+      <tr><th></th><th>z 分最高的 5 个位置</th><th class="num">top-5均值</th><th>判定(阈值3.52)</th></tr>
+      <tr class="hl-bad"><td>黑 B_0291</td><td class="mono" style="white-space:normal">4.65(解绑卡) 4.13(绑卡) 3.98(改限额) 3.81(借款) 3.70(借款)</td><td class="num"><b>4.05</b></td><td>命中 ⚑</td></tr>
+      <tr class="hl"><td>白 W_0485</td><td class="mono" style="white-space:normal">3.73(借款) 2.02(解绑卡) 1.72(绑卡) 1.69(绑卡) 1.42(设备变更)</td><td class="num"><b>2.12</b></td><td>放行</td></tr>
+    </table></div>
+    <p>注意白样本也有一个 3.73 的单点高分（会话里巧合夹了笔借款）——<strong>这就是取 top-5 平均而非 top-1 的原因</strong>：单个巧合拉不动分数，成串的异常才能过线。而黑样本的 top-5 里 3 个直接落在爆发链上——这 5 个位置同时就是给审核员的"可疑操作清单"。</p>
+  </div>
+</section>
+
+<!-- ========== ④ 融合 ========== -->
+<section id="s4">
+  <div class="sec-head"><span class="sec-no">STEP ④</span>
+    <div><h2>融合通道：模型原理上吃不到的信号怎么补</h2>
+    <div class="sec-sub">一条用真金白银换来的机制规律</div></div></div>
+  <p>有一类信号<strong>永远不会以"惊讶"的形式冒出来</strong>：账户级的静态比例特征。例如"首次对手方占比"——模型学会"钓鱼账户的打款方就是全是生面孔"之后，预测得很准、CE 很低，信号在预测通道里消失了。</p>
+  <div class="ex"><span class="tag-ex">真实例子 · 以太坊钓鱼(全真实数据)的三组数字</span>
+    <div class="tbl-wrap"><table>
+      <tr><th>做法</th><th class="num">AUC</th><th class="num">低误报召回 R@FPR1%</th></tr>
+      <tr><td>MEM 异常分（单独）</td><td class="num">0.9035</td><td class="num">14.7%</td></tr>
+      <tr><td>"首次对手方占比"裸特征（单独）</td><td class="num">0.8168</td><td class="num">—</td></tr>
+      <tr><td>把该特征塞进模型当字段+预测头 ✗</td><td class="num">0.9041（无效）</td><td class="num">—</td></tr>
+      <tr class="hl"><td><strong>两个分数秩融合（0.6/0.4 加权）✓</strong></td><td class="num"><b>0.9281</b></td><td class="num"><b>44.9%（×3）</b></td></tr>
+    </table></div>
+    <p>同一个信号，进预测通道无效，走融合通道立涨 2.5pp、低误报召回翻三倍，离全标签上限(0.934)只剩 0.006。</p>
+  </div>
+  <div class="why"><b>规律入册：</b>判别信号分两类——<b>模式类</b>（序列/字段组合异常）进 masked/AR 预测通道；<b>聚合类</b>（比例、计数、静态画像）走分数级融合通道。对接真实业务："收款账号是否首次出现"是必采字段，以裸特征+融合方式使用。</div>
+</section>
+
+<!-- ========== ⑤ 阈值 ========== -->
+<section id="s5">
+  <div class="sec-head"><span class="sec-no">STEP ⑤</span>
+    <div><h2>阈值与输出：分数怎么变成决策</h2>
+    <div class="sec-sub">阈值不是拍的，是白样本分位数定的</div></div></div>
+  <div class="ex"><span class="tag-ex">真实例子 · temporal 实验的这一刀</span>
+    <p>取一批白样本分数的 <strong>99 分位 = 3.52</strong> 当阈值 → 数学上保证只误伤 1% 正常用户。这一刀实测能抓住 70.8% 的黑样本。B_0291(4.05) 超线命中、W_0485(2.12) 放行。想抓更多就把刀左移，用误报换召回——和评分卡运营完全一致。</p>
+  </div>
+  <ul>
+    <li><strong>按活跃度分桶各定各的阈值</strong>（活跃用户与低频用户分数分布不同，一刀切会系统性误伤一群人），每月用新白样本重算防漂移；</li>
+    <li><strong>输出 = 风险分 + top-k 可疑位置</strong>（出证材料），进人工审核队列，<strong>不自动处置</strong>；</li>
+    <li>审核结论回流成标签 → 攒到 10~50 个时用于融合权重与阈值校准，50+ 时启动监督模型接管（那是另一层的事，零标签方案本身是完全体）。</li>
+  </ul>
+</section>
+
+<!-- ========== 原理与证据 ========== -->
+<section id="s6">
+  <div class="sec-head"><span class="sec-no">收官</span>
+    <div><h2>为什么零标签能分开：原理 + 全部证据</h2>
+    <div class="sec-sub">不是运气，是原理保证 + 六个数据集的定量兑现</div></div></div>
+  <p><strong>原理：</strong>方法从不试图认识"欺诈长什么样"（那需要标签），只认识"这个人群 + 这个人正常长什么样"。欺诈者可以伪装很多东西，但要同时做到"操作节奏像正常人、金额符合受害者本人惯例、对手方有历史、结果字段干净"几乎不可能——<strong>他没法表现得像受害者本人</strong>。</p>
+  <div class="tbl-wrap"><table>
+    <tr><th>数据集</th><th>性质</th><th class="num">零标签(本方案)</th><th class="num">全标签上限(oracle)</th><th>达成率</th></tr>
+    <tr><td>rich（操作流）</td><td>合成</td><td class="num"><b>0.984</b></td><td class="num">~0.99</td><td>≈100%</td></tr>
+    <tr><td>temporal（操作流）</td><td>合成</td><td class="num">0.959</td><td class="num">0.999</td><td>96%</td></tr>
+    <tr class="hl"><td>Ethereum 钓鱼</td><td><b>✅ 全真实</b></td><td class="num"><b>0.928</b></td><td class="num">0.934</td><td>99%</td></tr>
+    <tr><td>Sparkov（消费流）</td><td>拟真</td><td class="num">0.886</td><td class="num">0.880</td><td><b>超过 ★</b></td></tr>
+    <tr><td>TabFormer（消费流）</td><td>拟真</td><td class="num">0.752</td><td class="num">0.760</td><td>99%</td></tr>
+    <tr><td>AML（转账）</td><td>拟真</td><td class="num">0.712</td><td class="num">0.695</td><td><b>超过 ★</b></td></tr>
+  </table></div>
+  <p>★ 两处"零标签超过全标签"的原因：个人基线、对手方新旧这些信息维度是标签模型（用统计特征的 LR）没有的——<strong>好的表示可以比标签更值钱</strong>。</p>
+  <div class="callout"><p><strong>唯一的前提（也是唯一的风险）：</strong>判别信号必须真的存在于行为数据里。PaySim 是反例——全标签模型也只有 0.61，数据本身无信号，任何方法都救不了。所以接入新数据的第一步永远是摸底（profile），确认信号在哪一层、有多强，再谈建模。</p></div>
+</section>
+
+<div class="foot">
+  <p>数值出处：EXPERIMENT_MEM.md（打分三步与真实预测例子）· ENCODING_REPORT.md（编码与个人基线）·
+  ARCH_REPORT.md（三档训练目标）· IMPROVEMENT_REPORT.md（融合通道）· FINAL_SOLUTION.md（完整分层系统）。
+  编码例子来自用户样本 N00010 实算（walkthrough.py）。</p>
+</div>
+</div>
