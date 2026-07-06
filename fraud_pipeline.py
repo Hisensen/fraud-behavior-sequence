@@ -628,6 +628,251 @@ def pool_scores(zs, shape, heads):
     return combos, aggs
 
 
+
+# ============================================================
+# ⑥ diagnose — 六关卡全链路诊断: 分不出来时自动定位原因
+# ============================================================
+def _auc(y, s):
+    from sklearn.metrics import roc_auc_score
+    return float(roc_auc_score(y, s))
+
+
+def cmd_diagnose(args):
+    import torch
+    from collections import Counter
+    random.seed(SEED); np.random.seed(SEED); torch.manual_seed(SEED)
+    os.makedirs(args.out, exist_ok=True)
+    R = []          # 报告行
+    verdicts = []   # (关卡, 状态, 说明)
+
+    def log(line=""):
+        print(line, flush=True); R.append(line)
+
+    def verdict(gate, status, msg):
+        verdicts.append((gate, status, msg))
+        log(f"  [{status}] {msg}")
+
+    users = load_jsonl(args.file)
+    w = [u for u in users if u["label"] == 0]
+    b = [u for u in users if u["label"] == 1]
+    has_labels = len(b) >= 10
+
+    # ---------------- 关卡 C1: 数据体检 ----------------
+    log("=" * 60); log("关卡 C1 · 数据体检 (原材料有没有问题)"); log("=" * 60)
+    log(f"  用户 {len(users)} (白 {len(w)} / 黑 {len(b)}), "
+        f"序列长度中位 {int(np.median([len(u['events']) for u in users]))}")
+    gaps_all, starts, sec_zero, n_ts = [], Counter(), 0, 0
+    for u in users:
+        prev = None
+        first = True
+        for ev in u["events"]:
+            t = datetime.strptime(ev["t"], "%Y-%m-%d %H:%M:%S")
+            n_ts += 1
+            sec_zero += (t.second == 0)
+            if first:
+                starts[t.strftime("%H:%M")] += 1; first = False
+            if prev:
+                gaps_all.append(
+                    int(np.searchsorted(GAP_EDGES,
+                                        max((t - prev).total_seconds(), 0),
+                                        side="left")))
+            prev = t
+    gh = np.bincount(gaps_all, minlength=8)[:8] / max(len(gaps_all), 1)
+    log("  间隔桶分布: " + " ".join(f"{GAP_LBL[i]}:{gh[i]:.0%}"
+                                    for i in range(8) if gh[i] >= 0.01))
+    if gh.max() > 0.8:
+        verdict("C1", "❌", f"时间粒度退化: {gh.argmax()}号桶占{gh.max():.0%}"
+                " —— 间隔字段近乎常数, 时序信号基本不可用, 检查时间戳精度/分桶边界")
+    else:
+        verdict("C1", "✅", "间隔分布有多样性")
+    top_start, top_n = starts.most_common(1)[0]
+    if top_n / len(users) > 0.3:
+        verdict("C1", "⚠️", f"起始时间高度集中: {top_n/len(users):.0%} 的用户从 "
+                f"{top_start} 开始 —— 疑似采集/生成伪影, 可能成为泄漏捷径")
+    if sec_zero / n_ts > 0.95:
+        verdict("C1", "⚠️", "时间戳几乎全为整分钟 —— 秒级信息缺失, 密集爆发类信号会被钝化")
+    if not has_labels:
+        verdict("C1", "⚠️", f"黑样本仅 {len(b)} 个(<10) —— 无法计算 AUC, "
+                "后续关卡只能给部分诊断")
+
+    # ---------------- 关卡 C2: 信号存在性 (oracle 分层摸底) ----------------
+    log(""); log("=" * 60)
+    log("关卡 C2 · 信号存在性 (数据里到底有没有可分的信号)"); log("=" * 60)
+    rng = random.Random(SEED); rng.shuffle(w)
+    n_tr = int(len(w) * 0.8)
+    train_w, test_w = w[:n_tr], w[n_tr:]
+    enc = Encoder(train_w)
+    etr = [enc.encode(u) for u in train_w]
+    ete = [enc.encode(u) for u in test_w + b]
+    y = np.array([u["label"] for u in ete])
+    oracle_layers = {}
+    if has_labels:
+        from sklearn.linear_model import LogisticRegression
+        from sklearn.model_selection import cross_val_predict
+        from sklearn.pipeline import make_pipeline
+        from sklearn.preprocessing import StandardScaler
+        allu = etr + ete
+        ya = np.array([u["label"] for u in allu])
+        pipe = make_pipeline(StandardScaler(),
+                             LogisticRegression(max_iter=2000))
+        def cv(name, X):
+            p = cross_val_predict(pipe, np.array(X), ya, cv=5,
+                                  method="predict_proba")[:, 1]
+            a = _auc(ya, p); oracle_layers[name] = a
+            log(f"  oracle[{name}] AUC = {a:.4f}")
+        cv("词频/模式层", [[u["type"].count(k)/len(u["type"])
+                           for k in range(min(enc.n_types, 50))] for u in allu])
+        if enc.has_amount:
+            cv("个人金额层", [[max(u["pamt"]),
+                              sum(1 for p_ in u["pamt"] if p_ == N_PAMT-1)]
+                             for u in allu])
+        cv("时序密集层", [[float(np.mean(np.array(u["gap"]) <= 1)),
+                          sum(1 for g_ in u["gap"] if g_ == 0)] for u in allu])
+        if enc.has_res:
+            cv("状态/失败层", [[sum(1 for r_ in u["res"] if r_ == 2)]
+                              for u in allu])
+        omax = max(oracle_layers.values())
+        obest = max(oracle_layers, key=oracle_layers.get)
+        if omax < 0.58:
+            verdict("C2", "❌", f"所有信号层 oracle 都≈随机(最高 {omax:.3f}) —— "
+                    "根因大概率在这里: 数据里没有可分信号。任何模型都救不了, "
+                    "回头核查: 黑样本定义是否正确/关键字段是否缺失/欺诈是否根本不在行为层")
+        elif omax < 0.7:
+            verdict("C2", "⚠️", f"信号偏弱(最强层 {obest}={omax:.3f}) —— "
+                    "可分但上限不高, 模型预期 ≈ 上限−0.03~0.07")
+        else:
+            verdict("C2", "✅", f"信号存在, 最强层={obest}({omax:.3f}), "
+                    f"模型预期落点 {omax-0.07:.2f}~{omax-0.03:.2f}")
+    else:
+        log("  (无标签, 跳过 oracle)")
+
+    # ---------------- 关卡 C3: 训练体检 (模型学到语法了吗) ----------------
+    log(""); log("=" * 60)
+    log("关卡 C3 · 训练体检 (模型有没有学到'正常语法')"); log("=" * 60)
+    n_val = max(20, len(etr) // 10)
+    etr_fit, etr_val = etr[:-n_val], etr[-n_val:]
+    model = build_model(args.shape, enc)
+    train_model(model, etr_fit, args.shape, "cpu", epochs=args.epochs)
+    pcs_val = per_position_ce(model, etr_val, args.shape, "cpu")
+    n_cls = {"type": enc.n_types, "gap": N_GAP, "pamt": N_PAMT, "res": 3}
+    log("  留出白样本上的预测能力(语法学习度 = 1 − 实际CE/瞎猜CE):")
+    grammar = {}
+    for h in model.heads_list:
+        ce_val = float(np.mean(np.concatenate([p[h] for p in pcs_val])))
+        base = math.log(n_cls[h])
+        g = max(0.0, 1 - ce_val / base)
+        grammar[h] = g
+        log(f"    {h:<6} CE={ce_val:.3f} vs 瞎猜{base:.3f} → 语法学习度 {g:.0%}")
+    if max(grammar.values()) < 0.10:
+        verdict("C3", "❌", "模型在白样本上几乎不比瞎猜强 —— 白样本行为本身接近随机, "
+                "没有可学的'正常语法'(生成/采集问题), 惊讶度打分将失效")
+    else:
+        gb_ = max(grammar, key=grammar.get)
+        verdict("C3", "✅", f"学到语法(最强头 {gb_} 学习度 {grammar[gb_]:.0%})")
+
+    # ---------------- 关卡 C4: 头级分离度 ----------------
+    log(""); log("=" * 60)
+    log("关卡 C4 · 头级分离度 (哪路信号在起作用/失效)"); log("=" * 60)
+    pcs_tr = per_position_ce(model, etr_fit, args.shape, "cpu")
+    pcs = per_position_ce(model, ete, args.shape, "cpu")
+    zs = {h: z_norm(pcs_tr, pcs, h) for h in model.heads_list}
+    head_auc = {}
+    if has_labels:
+        for h in model.heads_list:
+            s5 = np.array([float(np.sort(a)[-min(5, len(a)):].mean())
+                           for a in zs[h]])
+            sm = np.array([float(a.mean()) for a in zs[h]])
+            head_auc[h] = max(_auc(y, s5), _auc(y, sm))
+            log(f"  头[{h:<5}] AUC = {head_auc[h]:.4f}"
+                + ("  ← 反向!" if head_auc[h] < 0.45 else ""))
+        dead = [h for h, a in head_auc.items() if 0.45 <= a < 0.55]
+        if dead:
+            verdict("C4", "⚠️", f"无信号的头: {','.join(dead)} —— 这些字段在该数据上"
+                    "不携带判别信息(与 C2 各层对照可知信号丢在编码还是数据)")
+        inv = [h for h, a in head_auc.items() if a < 0.45]
+        if inv:
+            verdict("C4", "❌", f"反向的头: {','.join(inv)} —— 疑似熵混淆残留或"
+                    "该字段黑样本反而更规律, 单头剔除或检查归一化分桶")
+        if any(a >= 0.6 for a in head_auc.values()):
+            hb = max(head_auc, key=head_auc.get)
+            verdict("C4", "✅", f"有效头存在(最强 {hb}={head_auc[hb]:.3f})")
+
+    # ---------------- 关卡 C5: 打分方式诊断 ----------------
+    log(""); log("=" * 60)
+    log("关卡 C5 · 打分方式诊断 (归一化/池化选对了吗)"); log("=" * 60)
+    combos, aggs = pool_scores(zs, args.shape, model.heads_list)
+    best = (0.5, None, None)
+    if has_labels:
+        raw_mean = np.array([float(np.mean(sum(p[h] for h in model.heads_list)))
+                             for p in pcs])
+        a_raw = _auc(y, raw_mean)
+        log(f"  raw平均(不归一化) AUC = {a_raw:.4f}")
+        for cn, z in combos.items():
+            for an, fn in aggs:
+                s = np.array([fn(a) for a in z])
+                a_ = _auc(y, s)
+                if a_ > best[0]:
+                    best = (a_, f"{cn}|{an}", s)
+        log(f"  z-norm 最优组合   AUC = {best[0]:.4f}  ({best[1]})")
+        zm = {an: max(_auc(y, np.array([fn(a) for a in combos['SUM']])), 0)
+              for an, fn in aggs}
+        log("  池化对比(SUM头): " + "  ".join(f"{k}={v:.3f}"
+                                              for k, v in zm.items()))
+        if a_raw < 0.45 and best[0] > 0.6:
+            verdict("C5", "✅", "检测到熵混淆且已被 z-norm 修复(raw反向→z-norm正常), 属预期行为")
+        if best[0] - a_raw > 0.1:
+            verdict("C5", "✅", f"归一化贡献显著(+{best[0]-a_raw:.2f})")
+        mean_a = zm.get("mean", 0)
+        topk_a = max(v for k, v in zm.items() if k.startswith("top"))             if any(k.startswith("top") for k in zm) else 0
+        if abs(mean_a - topk_a) > 0.05:
+            better = "mean(整体型异常)" if mean_a > topk_a else "top-k(局部型异常)"
+            verdict("C5", "✅", f"池化方式敏感, 该数据适合 {better}")
+
+    # ---------------- 关卡 C6: 根因判定 ----------------
+    log(""); log("=" * 60)
+    log("关卡 C6 · 根因判定"); log("=" * 60)
+    if has_labels:
+        final_auc = best[0]
+        log(f"  最终无监督 AUC = {final_auc:.4f}")
+        if oracle_layers:
+            omax = max(oracle_layers.values())
+            obest = max(oracle_layers, key=oracle_layers.get)
+            gap_o = omax - final_auc
+            log(f"  oracle 上限 = {omax:.4f} ({obest}), 差距 = {gap_o:+.4f}")
+            if omax < 0.58:
+                log("  ➤ 根因: 【数据无信号】所有层 oracle≈随机。行动: 回查黑样本定义、"
+                    "补字段(对手方/设备/结果)、或信号在图层(团伙)需图方法")
+            elif final_auc >= omax - 0.08:
+                log("  ➤ 结论: 【正常发挥】已达数据上限的 92%+。想再提升只能给数据"
+                    "补信息(字段优先级: 个人基线/result/对手方新旧), 不必再调模型")
+            elif max(grammar.values()) < 0.10:
+                log("  ➤ 根因: 【白样本无语法】模型学不到正常规律(C3 ❌)。"
+                    "行动: 核查白样本是否真实用户行为、采集是否失真")
+            else:
+                gaps_expl = []
+                if oracle_layers.get("个人金额层", 0) > final_auc + 0.05 or \
+                   oracle_layers.get("状态/失败层", 0) > final_auc + 0.05:
+                    gaps_expl.append("某 oracle 层明显高于模型 → 该层信号是聚合型, "
+                                     "改走分数融合通道(勿塞进模型)")
+                if len(b) / max(len(users), 1) > 0.15:
+                    gaps_expl.append(f"黑样本占比 {len(b)/len(users):.0%}>15% → "
+                                     "训练污染超验证上限, 需少量标签预过滤训练集")
+                if not gaps_expl:
+                    gaps_expl.append("差距超预期但无明显单一原因 → 依次尝试: "
+                                     "换 shape 配置 / 加训练轮数 / 检查间隔分桶边界")
+                for e_ in gaps_expl:
+                    log(f"  ➤ 可能根因: {e_}")
+    else:
+        log("  无标签模式: 已输出 C1/C3 体检结论。拿分数 top 榜单人工审核 1 周, "
+            "审核结果即是评估答案")
+    log(""); log("=" * 60); log("诊断汇总"); log("=" * 60)
+    for g, s, m in verdicts:
+        log(f"  {g} [{s}] {m}")
+    path = os.path.join(args.out, "diagnosis.txt")
+    open(path, "w", encoding="utf-8").write("\n".join(R))
+    log(f"\n完整诊断 → {path}")
+
+
 def cmd_run(args):
     import torch
     random.seed(SEED); np.random.seed(SEED); torch.manual_seed(SEED)
@@ -754,6 +999,13 @@ def main():
     p.set_defaults(fn=cmd_convert)
     p = sub.add_parser("profile", help="③ 质量自检 + oracle 摸底")
     p.add_argument("file"); p.set_defaults(fn=cmd_profile)
+    p = sub.add_parser("diagnose", help="⑥ 全链路六关卡诊断: 分不出来时定位原因")
+    p.add_argument("file")
+    p.add_argument("--shape", choices=["operation", "funds", "consumption"],
+                   required=True)
+    p.add_argument("--epochs", type=int, default=25)
+    p.add_argument("-o", "--out", default="outputs")
+    p.set_defaults(fn=cmd_diagnose)
     p = sub.add_parser("run", help="④ 训练 + 评估")
     p.add_argument("file")
     p.add_argument("--shape", choices=["operation", "funds", "consumption"],
