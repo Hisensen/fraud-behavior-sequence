@@ -1,0 +1,454 @@
+<title>零基础完整教程 · 无标签行为序列反欺诈</title>
+<style>
+:root{
+  --bg:#F5F7F6; --surface:#FFFFFF; --ink:#1B2723; --ink2:#5A6B66; --ink3:#8A9893;
+  --line:#E1E7E4; --line2:#CBD5D1;
+  --normal:#00997C; --normal-soft:rgba(0,153,124,.10);
+  --fraud:#C24A32; --fraud-soft:rgba(194,74,50,.10);
+  --warn:#9A6B1C; --warn-soft:rgba(154,107,28,.12);
+  --code-bg:#EEF2F0;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#121816; --surface:#1A2320; --ink:#E4EBE8; --ink2:#93A29C; --ink3:#6C7B76;
+    --line:#2A3531; --line2:#3A4744;
+    --normal:#26A69A; --normal-soft:rgba(38,166,154,.14);
+    --fraud:#E0704F; --fraud-soft:rgba(224,112,79,.14);
+    --warn:#D9A03F; --warn-soft:rgba(217,160,63,.15);
+    --code-bg:#222D29;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#121816; --surface:#1A2320; --ink:#E4EBE8; --ink2:#93A29C; --ink3:#6C7B76;
+  --line:#2A3531; --line2:#3A4744;
+  --normal:#26A69A; --normal-soft:rgba(38,166,154,.14);
+  --fraud:#E0704F; --fraud-soft:rgba(224,112,79,.14);
+  --warn:#D9A03F; --warn-soft:rgba(217,160,63,.15);
+  --code-bg:#222D29;
+}
+:root[data-theme="light"]{
+  --bg:#F5F7F6; --surface:#FFFFFF; --ink:#1B2723; --ink2:#5A6B66; --ink3:#8A9893;
+  --line:#E1E7E4; --line2:#CBD5D1;
+  --normal:#00997C; --normal-soft:rgba(0,153,124,.10);
+  --fraud:#C24A32; --fraud-soft:rgba(194,74,50,.10);
+  --warn:#9A6B1C; --warn-soft:rgba(154,107,28,.12);
+  --code-bg:#EEF2F0;
+}
+*{box-sizing:border-box}
+body{margin:0; background:var(--bg); color:var(--ink);
+  font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  font-size:15.5px; line-height:1.8}
+.wrap{max-width:900px; margin:0 auto; padding:46px 24px 90px}
+h1,h2,h3,h4{font-family:"Songti SC","STSong","Noto Serif SC",serif; text-wrap:balance; line-height:1.32}
+h1{font-size:32px; margin:8px 0 14px}
+h2{font-size:23px; margin:0 0 4px}
+h3{font-size:17.5px; margin:26px 0 8px}
+h4{font-size:15.5px; margin:18px 0 6px; color:var(--ink)}
+p{margin:0 0 13px}
+.eyebrow{font-size:12px; letter-spacing:.18em; color:var(--ink2)}
+.lede{color:var(--ink2); max-width:46em; font-size:16px}
+.mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace; font-variant-numeric:tabular-nums}
+code{background:var(--code-bg); padding:1px 6px; border-radius:4px;
+  font-family:ui-monospace,"SF Mono",Menlo,monospace; font-size:.88em}
+pre{background:var(--code-bg); border:1px solid var(--line); border-radius:8px;
+  padding:12px 16px; overflow-x:auto; font-size:12.5px; line-height:1.65;
+  font-family:ui-monospace,"SF Mono",Menlo,monospace; margin:10px 0}
+section{margin-top:58px; scroll-margin-top:66px}
+.sec-head{display:flex; align-items:baseline; gap:12px;
+  border-bottom:2px solid var(--ink); padding-bottom:8px; margin-bottom:16px}
+.sec-no{font-family:ui-monospace,"SF Mono",Menlo,monospace; font-size:13px;
+  color:var(--surface); background:var(--ink); padding:2px 11px; border-radius:6px;
+  white-space:nowrap}
+.sec-sub{color:var(--ink2); font-size:14px; margin-top:2px}
+.card{background:var(--surface); border:1px solid var(--line); border-radius:10px;
+  padding:18px 20px; margin:14px 0}
+.ex{border-left:3px solid var(--normal); background:var(--normal-soft);
+  border-radius:0 8px 8px 0; padding:13px 18px; margin:14px 0}
+.ex .tg{font-size:11px; font-weight:700; letter-spacing:.1em; color:var(--normal);
+  display:block; margin-bottom:6px}
+.callout{border-left:3px solid var(--warn); background:var(--warn-soft);
+  border-radius:0 8px 8px 0; padding:12px 18px; margin:16px 0}
+.callout.fraud{border-left-color:var(--fraud); background:var(--fraud-soft)}
+.callout p:last-child,.ex p:last-child{margin-bottom:0}
+.math{background:var(--code-bg); border-radius:8px; padding:10px 16px;
+  font-family:ui-monospace,"SF Mono",Menlo,monospace; font-size:13.5px;
+  margin:10px 0; overflow-x:auto; line-height:1.9}
+table{border-collapse:collapse; width:100%; font-size:13.5px}
+.tbl-wrap{overflow-x:auto; margin:12px 0}
+th{text-align:left; font-weight:600; color:var(--ink3); font-size:12px;
+  letter-spacing:.04em; border-bottom:1.5px solid var(--line2);
+  padding:6px 12px 6px 0; white-space:nowrap}
+td{border-bottom:1px solid var(--line); padding:6px 12px 6px 0; vertical-align:top}
+td.num,th.num{text-align:right; font-family:ui-monospace,"SF Mono",Menlo,monospace;
+  font-variant-numeric:tabular-nums; white-space:nowrap}
+tr.hl td{background:var(--normal-soft)}
+tr.hl-bad td{background:var(--fraud-soft)}
+.pred .row{display:grid; grid-template-columns:74px 1fr 118px; align-items:center;
+  gap:10px; margin:5px 0}
+.pred .lbl{font-size:13px; text-align:right; white-space:nowrap}
+.pred .bar{height:13px; border-radius:0 4px 4px 0; background:var(--ink3);
+  opacity:.55; min-width:2px}
+.pred .row.truth .bar{background:var(--fraud); opacity:1}
+.pred .row.truth-ok .bar{background:var(--normal); opacity:1}
+.pred .pv{font-family:ui-monospace,"SF Mono",Menlo,monospace; font-size:12px; color:var(--ink2)}
+nav.toc{display:block; background:var(--surface); border:1px solid var(--line);
+  border-radius:10px; padding:14px 20px; margin:22px 0; font-size:14px; column-count:2; column-gap:30px}
+nav.toc a{display:block; color:var(--ink2); text-decoration:none; padding:2.5px 0}
+nav.toc a:hover{color:var(--normal)}
+nav.toc b{display:block; font-size:12px; color:var(--ink3); letter-spacing:.08em; margin-bottom:4px}
+@media(max-width:640px){nav.toc{column-count:1}}
+.dialog{margin:10px 0}
+.dialog .q{font-weight:600; margin:14px 0 4px}
+.dialog .q::before{content:"问："; color:var(--fraud)}
+.dialog .a::before{content:"答："; color:var(--normal); font-weight:600}
+.foot{margin-top:64px; border-top:1px solid var(--line); padding-top:14px;
+  font-size:12.5px; color:var(--ink3)}
+strong{font-weight:600}
+ul,ol{padding-left:1.4em; margin:8px 0}
+li{margin:5px 0}
+.kicker{font-size:13px; color:var(--ink3); font-style:normal}
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">零基础完整教程 · 假设读者对本方案一无所知 · 2026-07-06</div>
+  <h1>不用欺诈标签，怎么从行为数据里抓出骗子</h1>
+  <p class="lede">这份教程写给<strong>完全没接触过本方案的人</strong>。从"要解决什么问题"讲起，每一个步骤都配具体例子（含算术过程），最后用完整的实验数据证明它有效。读完你应该能向别人复述整套方案，并回答"凭什么可信"。</p>
+</header>
+
+<nav class="toc">
+  <b>目录</b>
+  <a href="#c0">第 0 章 · 问题与核心思路</a>
+  <a href="#c1">第 1 章 · 数据长什么样</a>
+  <a href="#c2">第 2 章 · 编码：把行为变成数字</a>
+  <a href="#c3">第 3 章 · 训练：模型怎么学会"正常"</a>
+  <a href="#c4">第 4 章 · 打分：从惊讶到风险分</a>
+  <a href="#c5">第 5 章 · 阈值与输出</a>
+  <a href="#c6">第 6 章 · 融合：模型吃不到的信号</a>
+  <a href="#c7">第 7 章 · 实验证明（数据说话）</a>
+  <a href="#c8">第 8 章 · 常见疑问 FAQ</a>
+</nav>
+
+<!-- ============ 第 0 章 ============ -->
+<section id="c0">
+  <div class="sec-head"><span class="sec-no">第 0 章</span>
+    <div><h2>问题与核心思路</h2><div class="sec-sub">为什么标签稀缺，以及一个保安的比喻</div></div></div>
+
+  <h3>0.1 要解决什么问题</h3>
+  <p>银行/支付平台想从海量用户里找出<strong>欺诈账户</strong>：被盗号的、做套现的、帮骗子收款的。传统机器学习的做法是"给我一堆标好'这是骗子/这是好人'的样本，我学出一个分类器"。但现实是：</p>
+  <ul>
+    <li><strong>欺诈标签极其稀缺</strong>——确认一个欺诈案件要经过报案、调查、定性，能拿到的黑样本往往只有几十个，而用户有几十万；</li>
+    <li><strong>欺诈手法持续变化</strong>——就算标了 1000 个去年的案子，今年骗子换了剧本，分类器认不出来；</li>
+    <li>正常用户的数据倒是<strong>要多少有多少</strong>，而且几乎都是真正常（欺诈率通常只有 0.1%~1%）。</li>
+  </ul>
+  <p>所以问题变成：<strong>只有一大堆"基本都是好人"的行为数据、几乎没有欺诈标签，怎么把骗子挑出来？</strong></p>
+
+  <h3>0.2 核心思路：保安认熟客</h3>
+  <div class="ex"><span class="tg">比喻</span>
+    <p>一个小区保安干了十年，从没人教过他"小偷长什么样"，但他能一眼看出不对劲的人。为什么？因为他<strong>太熟悉"正常"了</strong>：住户几点出门、快递员怎么走、访客什么节奏。小偷可以穿得人模人样，但他在楼道里的停留、张望、折返，处处违反保安脑中的"正常剧本"——<strong>他不需要认识小偷，他只需要熟悉正常。</strong></p>
+  </div>
+  <p>本方案就是把这个保安换成一个小型神经网络：</p>
+  <ol>
+    <li><strong>只用正常用户的行为数据</strong>训练一个"预测行为"的模型——让它做几十万道"看了前面的操作，猜下一步是什么"的预测题，做多了它就掌握了正常行为的规律（术语叫"行为语法"）；</li>
+    <li>拿它去看待检用户：<strong>正常用户的行为它猜得准；欺诈者的行为处处出乎它意料</strong>——把"意外程度"累计起来就是风险分；</li>
+    <li>风险分超过阈值的，连同"具体哪几步可疑"一起推给人工审核。</li>
+  </ol>
+  <p class="kicker">术语备注：这类方法学名叫"自监督异常检测"（self-supervised anomaly detection）。说"无监督"是因为全程不用欺诈标签；说"自监督"是因为训练时的标准答案（下一个事件是什么）就藏在数据自己身上，不需要人标。</p>
+
+  <h3>0.3 全流程一图</h3>
+  <pre>
+原始流水数据
+   │  ① 编码: 每个行为事件 → 8 路字段 → 一个 64 维向量        (第 2 章)
+   ▼
+事件向量序列
+   │  ② 训练: 只用正常用户, 做"预测下一步"的题, 学会正常语法    (第 3 章)
+   ▼
+训练好的模型
+   │  ③ 打分: 逐位置算"惊讶度" → 难度归一化 → 汇总成风险分      (第 4 章)
+   ▼
+每人一个风险分 ──④ 融合: 补上模型吃不到的静态特征              (第 6 章)
+   │  ⑤ 决策: 在正常用户分数的 99 分位切一刀                   (第 5 章)
+   ▼
+超线者 → 人工审核队列(附"哪几步可疑"的证据)</pre>
+</section>
+
+<!-- ============ 第 1 章 ============ -->
+<section id="c1">
+  <div class="sec-head"><span class="sec-no">第 1 章</span>
+    <div><h2>数据长什么样</h2><div class="sec-sub">先认识原材料：行为序列</div></div></div>
+  <p>原材料是<strong>行为序列</strong>：把一个用户在一段时间内做过的所有事，按时间顺序排成一列。每件事叫一个<strong>事件</strong>，带着"什么类型、什么时间、多少钱、成没成功"等字段。</p>
+  <div class="ex"><span class="tg">真实例子 · 一个正常用户(白样本)的序列片段</span>
+<pre>{"user_id": "N00010", "label": 0, "events": [
+  {"type": "登录",   "t": "2024-06-03 08:00:00", "result": "成功"},
+  {"type": "查余额", "t": "2024-06-03 08:27:00"},
+  {"type": "消费",   "t": "2024-06-03 08:36:00", "amount": 167313},
+  {"type": "消费",   "t": "2024-06-03 09:05:00", "amount": 128780},
+  ... ]}</pre>
+    <p>读法：这个人 8 点登录，27 分钟后查余额，9 分钟后消费一笔……<code>label:0</code> 表示他是白样本（正常人）。<strong>训练时我们只用这样的数据，且训练过程根本不看 label。</strong></p>
+  </div>
+  <div class="ex"><span class="tg">真实例子 · 一个欺诈用户(黑样本)的关键片段 —— 盗号剧本</span>
+<pre>...前面 19 天都是正常购物消费...
+{"type": "设备变更", "t": "01-20 20:00:58"}          ← 换了新手机
+{"type": "改密码",   "t": "01-20 20:01:42"}  +44秒   ← 紧接着改密码
+{"type": "改限额",   "t": "01-20 20:04:11"}  +149秒
+{"type": "转出",     "t": "01-20 20:05:13", "amount": 1238}  +62秒
+{"type": "解绑卡",   "t": "01-20 20:09:10"}  +237秒</pre>
+    <p>肉眼就能看出问题：<strong>20 分钟内连续做了 5 个敏感操作</strong>。正常人也会改密码、也会换设备，但那些操作彼此隔着几小时到几天。方案要做的就是让机器自动发现这类"违反正常节奏"的模式——而且不止时间节奏这一种。</p>
+  </div>
+  <p>名词小结：<strong>白样本</strong>=正常用户；<strong>黑样本</strong>=欺诈用户（只在最后评估效果时用到，训练不用）；<strong>序列</strong>=一个用户的全部事件按时间排列。</p>
+</section>
+
+<!-- ============ 第 2 章 ============ -->
+<section id="c2">
+  <div class="sec-head"><span class="sec-no">第 2 章</span>
+    <div><h2>编码：把行为变成数字</h2><div class="sec-sub">神经网络只认数字，每个事件要变成一个向量——本章手算全过程</div></div></div>
+
+  <h3>2.1 思路：每个事件拆成 8 路字段，各自"分桶"成编号</h3>
+  <p>连续值（金额、时间间隔）不直接用原始数字，而是切成有限个"桶"，事件只记桶号。下面拿真实事件手算一遍。</p>
+
+  <div class="ex"><span class="tg">手算例子 · N00010 的那笔消费 167,313 元, 08:36, 距上一事件 9 分钟</span>
+    <h4>字段 1 · 事件类型 → 查字典</h4>
+    <div class="math">字典: {登录:0, 查余额:1, 改限额:2, 改密码:3, ..., 消费:9, ...}<br>"消费" → <b>type = 9</b></div>
+    <h4>字段 2 · 全局金额桶 → 和全体用户比</h4>
+    <p>把训练集所有金额排序，取 7 个等分位点当桶边界（这份数据算出来是 35,094 / 58,825 / 75,367 / 116,025 / 139,760 / 158,006）：</p>
+    <div class="math">167,313 &gt; 158,006（最后一个边界） → <b>全局桶 = 7</b>（全社会视角的最高档）</div>
+    <h4>字段 3 · 个人金额桶 → 和他自己比（全方案最值钱的特征）</h4>
+    <p>先算他本人历史金额的中位数 = 66,285，再算这笔是几倍，按 [0.25, 0.5, 1, 2, 4, 8] 倍切档：</p>
+    <div class="math">167,313 ÷ 66,285 = <b>2.52 倍</b> → 落在 [2, 4) 区间 → <b>个人桶 = 5</b></div>
+    <p class="kicker">为什么值钱：同样"转出 5 万"，对基线 500 元的人是 100 倍（顶格），对基线 5 万的人是 1 倍（平常）。全局桶看不出这个差别，个人桶专门编码"这对<em>他自己</em>正不正常"。</p>
+    <h4>字段 4 · 间隔桶 → 距上一事件多久</h4>
+    <div class="math">桶边界: [≤1分, 1-5分, 5-30分, 0.5-1时, 1-6时, 6-24时, 1-7天, &gt;7天, 首事件]<br>间隔 9 分钟 → 落在 5-30分 → <b>间隔桶 = 2</b></div>
+    <h4>字段 5 · 时刻 → sin/cos 连续编码</h4>
+    <p>钟表是圆的（23 点和 1 点很近），所以用三角函数而不是桶：</p>
+    <div class="math">8:36 → 8.6 时 → sin(2π×8.6/24) = <b>0.78</b>,  cos(2π×8.6/24) = <b>−0.63</b></div>
+    <h4>字段 6~8 · result / channel / ip_change → 有则编码，无则填 0</h4>
+    <div class="math">这笔消费没有 result 字段 → <b>res = 0（"不适用"）</b>；channel、ip 同理 → 0</div>
+    <p class="kicker">"不适用"不是数字零，是查表得到的一个可学习向量——这个设计让"登录"和"消费"这种字段完全不同的事件能进同一条序列（统一 Schema）。</p>
+  </div>
+
+  <h3>2.2 桶号 → 向量：查表拼接</h3>
+  <p>每路桶号去查各自的 <strong>Embedding 表</strong>（一张"编号→向量"的查询表，表里的数值是训练中学出来的）：</p>
+  <div class="math">type=9   → 查 类型表(12行×32维)   → 32 维向量<br>
+res=0    → 查 结果表(3×4)          →  4 维<br>
+ch=0, ip=0 → 渠道表/ip表           →  8+4 维<br>
+全局桶=7 → 查 全局金额表(8×8)      →  8 维<br>
+个人桶=5 → 查 个人金额表(8×16)     → 16 维<br>
+间隔桶=2 → 查 间隔表(9×16)         → 16 维<br>
+时刻     → (0.78, −0.63) → 线性层  →  8 维<br>
+──────────────────────────────────<br>
+拼接 = 96 维 → 线性压缩 → <b>该事件的 64 维向量</b></div>
+  <p>一个用户 70 个事件 → 一个 [70 × 64] 的矩阵，这就是模型的输入。</p>
+  <div class="callout"><p><strong>为什么分桶而不用原始数值？</strong>三个原因：① 后面这些桶号既是输入也是<strong>考题答案</strong>——"猜金额档"是 8 选 1 的选择题，良定且稳健；② 金额是长尾分布，原始值会被极端值主导；③ 分桶后查表，让模型给"大额"学出丰富的语义，而不是一个干巴巴的数。分位数分桶还天然免疫量纲（元/分/美元都一样）。</p></div>
+</section>
+
+<!-- ============ 第 3 章 ============ -->
+<section id="c3">
+  <div class="sec-head"><span class="sec-no">第 3 章</span>
+    <div><h2>训练：模型怎么学会"正常"</h2><div class="sec-sub">做几十万道预测题，答案就在数据里</div></div></div>
+
+  <h3>3.1 模型本体：一个小 Transformer</h3>
+  <p>Transformer 你只需要知道一个直觉：它读一条序列时，能<strong>同时看到所有位置并自动学会"该重点看哪里"</strong>（注意力机制）。本方案的模型很小——2 层、约 9 万参数，普通笔记本 CPU 几分钟训完。判别力不来自模型大小，来自练习方式。</p>
+
+  <h3>3.2 练习方式：预测题</h3>
+  <div class="ex"><span class="tg">真实例子 · 一道训练题（自回归式）</span>
+    <div class="math">已见: [登录·成功·08:00] → [查余额·+27分] → [消费·167,313·+9分]<br>
+题目: 请预测第 4 个事件的 ①类型 ②间隔档 ③结果 ④个人金额档<br>
+标准答案(就在数据下一行): [消费 · 128,780 · +29分]</div>
+    <p>模型对每问输出一个概率分布（比如"类型：消费 41%，查余额 22%，登录 15%……"）。答错多少，就按错误程度微调内部参数。<strong>一个用户 70 个事件就是 69 道题</strong>，几千个用户 × 几十轮 = 几十万道题做下来，模型就"见惯了"正常人的行为规律：会话内小间隔的事件多是消费/查余额、改密码前通常隔了几小时、金额一般在个人基线 0.5~2 倍之间……</p>
+  </div>
+  <p><strong>关键：全程没有用任何欺诈标签</strong>——考题和答案都来自正常数据自己。这就是"自监督"。</p>
+
+  <h3>3.3 三种出题方式（按数据类型选，实验裁决的对照表）</h3>
+  <div class="tbl-wrap"><table>
+    <tr><th>数据类型</th><th>出题方式</th><th>一句话原因</th><th class="num">实验得分</th></tr>
+    <tr class="hl"><td>操作流（App 日志）</td><td><strong>自回归</strong>：只看历史猜下一步（+时间偏置注意力）</td><td>盗号是因果链，"下一步"可预测；只看历史让攻击起点惊讶最大化</td><td class="num">0.984</td></tr>
+    <tr><td>资金流（转账流水）</td><td><strong>完形填空</strong>：随机遮 15% 事件用前后文猜回</td><td>异常是账户整体风格，双向看即可</td><td class="num">0.904</td></tr>
+    <tr><td>消费流（卡交易）</td><td><strong>遮字段</strong>：只遮金额、类别可见，学"这类消费该花多少钱"</td><td>下一笔买什么本质随机；欺诈藏在"字段搭配不对"里</td><td class="num">0.886</td></tr>
+  </table></div>
+  <div class="ex"><span class="tg">例子 · 遮字段式出题（消费流）</span>
+    <div class="math">已见: [类别=杂货店, 时刻=23:40, 距上笔=2小时, 金额=<b>???</b>]<br>
+题目: 猜金额档。 (正常人深夜杂货店消费是小额 →<br>若真实金额是本人基线的 12 倍 → 模型大吃一惊 → 这就是欺诈信号)</div>
+    <p>这个选择不是拍脑袋：在真实卡数据上，用错出题方式（完形填空）只有 0.557，换成遮字段直接到 0.886——<strong>出题方式必须匹配数据类型，第 7 章有完整数据。</strong></p>
+  </div>
+
+  <h3>3.4 "只用白样本"怎么保证？——不用保证</h3>
+  <p>现实中你拿到的是 unlabeled 数据，里面混着约 0.1%~1% 的欺诈。实验专门测过往训练集里掺欺诈：</p>
+  <div class="tbl-wrap"><table>
+    <tr><th>训练集混入欺诈比例</th><th class="num">0%</th><th class="num">1%</th><th class="num">5%</th><th class="num">10%</th></tr>
+    <tr><td>最终 AUC</td><td class="num">0.9605</td><td class="num">0.9647</td><td class="num">0.9671</td><td class="num">0.9598</td></tr>
+  </table></div>
+  <p><strong>混 10% 都几乎无损</strong>——因为欺诈模式在几十万道题里只占约 1%，模型来不及把它学成"正常"。所以 unlabeled 数据直接当白样本用即可（唯一边界：污染超过 ~15% 时会开始失效，第 7 章有这条边界的实证）。</p>
+</section>
+
+<!-- ============ 第 4 章 ============ -->
+<section id="c4">
+  <div class="sec-head"><span class="sec-no">第 4 章</span>
+    <div><h2>打分：从"惊讶"到风险分</h2><div class="sec-sub">三步走，其中第二步是整个项目摔得最疼的地方——手算全过程</div></div></div>
+
+  <h3>4.1 第一步 · 逐位置算"惊讶度"</h3>
+  <p>拿训练好的模型去看待检用户：每个位置让模型预测，对照真实发生的事件，用<strong>交叉熵</strong>量化惊讶程度——就是"模型给真实答案的概率取负对数"：</p>
+  <div class="ex"><span class="tg">真实例子 · 同一个模型的两次真实输出（含手算）</span>
+    <p style="margin-bottom:4px"><strong>局面 A</strong> —— 白样本购物会话中的一个位置，真实事件是<b>消费</b>：</p>
+    <div class="pred">
+      <div class="row truth-ok"><div class="lbl">消费</div><div><div class="bar" style="width:100%"></div></div><div class="pv">27.2% ✓ 真实答案</div></div>
+      <div class="row"><div class="lbl">登录</div><div><div class="bar" style="width:94%"></div></div><div class="pv">25.5%</div></div>
+      <div class="row"><div class="lbl">查余额</div><div><div class="bar" style="width:67%"></div></div><div class="pv">18.2%</div></div>
+    </div>
+    <div class="math">惊讶度 = −ln(0.272) = <b>1.30</b>   ← 猜得准, 很平静</div>
+    <p style="margin:12px 0 4px"><strong>局面 B</strong> —— 黑样本爆发链中（前 149 秒是改密码），真实事件是<b>改限额</b>：</p>
+    <div class="pred">
+      <div class="row"><div class="lbl">消费</div><div><div class="bar" style="width:100%"></div></div><div class="pv">28.9%</div></div>
+      <div class="row"><div class="lbl">登录</div><div><div class="bar" style="width:88%"></div></div><div class="pv">25.5%</div></div>
+      <div class="row truth"><div class="lbl">改限额</div><div><div class="bar" style="width:4.3%"></div></div><div class="pv">1.25% ← 真实答案</div></div>
+    </div>
+    <div class="math">惊讶度 = −ln(0.0125) = <b>4.38</b>   ← 大吃一惊</div>
+    <p>模型以为小间隔的上下文里该是购物会话，结果冒出个改限额——1.30 vs 4.38，欺诈位置的惊讶度是正常位置的三倍多。</p>
+  </div>
+
+  <h3>4.2 第二步 · 难度归一化（不做这步，结论是反的）</h3>
+  <div class="callout fraud"><p><strong>血泪教训：直接把每个位置的惊讶度取平均当风险分，实测 AUC 只有 0.32——比抛硬币还差，方向反了。</strong>原因叫"熵混淆"：有的位置<em>天生难猜</em>（隔了 6 小时之后干什么，谁都猜不准），有的<em>天生好猜</em>（会话内下一步八成还是购物）。而黑样本的爆发窗口恰恰全是小间隔——形态像购物会话，"天生好猜"，平均下来黑样本反而显得更正常。</p></div>
+  <p>修法：用白样本统计出"每种间隔难度下，正常人的惊讶度均值 μ 和标准差 σ"（下表是真实统计值），然后每个位置换算成<strong>标准分 z</strong>：</p>
+  <div class="tbl-wrap"><table>
+    <tr><th>间隔桶</th><th class="num">≤1分</th><th class="num">1-5分</th><th class="num">5-30分</th><th class="num">0.5-1时</th><th class="num">1-6时</th><th class="num">6-24时</th></tr>
+    <tr><td>正常人惊讶度均值 μ</td><td class="num">1.71</td><td class="num">1.71</td><td class="num">1.72</td><td class="num">2.23</td><td class="num">2.31</td><td class="num">2.34</td></tr>
+  </table></div>
+  <div class="ex"><span class="tg">手算例子</span>
+    <div class="math">z = (该位置惊讶度 − 同难度正常均值μ) ÷ 同难度标准差σ<br><br>
+局面B: 间隔桶=1-5分, 惊讶度4.38 → z = (4.38 − 1.71) ÷ 0.67 = <b>+3.98</b><br>
+另一位置: 间隔桶=0.5-1时, 惊讶度2.40 → z = (2.40 − 2.23) ÷ 1.13 = <b>+0.15</b></div>
+    <p>第一个位置比同等难度下的正常人多惊讶 4 个标准差——高度可疑；第二个虽然惊讶度绝对值不低，但那个难度下人人如此——正常。<strong>z 分回答的不是"惊讶多少"，而是"比同等难度下的正常人多惊讶多少"。</strong>这一步把 AUC 从 0.32 反转到 0.76。</p>
+  </div>
+
+  <h3>4.3 第三步 · 汇总（池化）：一串 z 分 → 一个风险分</h3>
+  <p>规则：欺诈是<strong>局部</strong>的（盗号只污染序列一小段）就取 z 分最高的 5 个位置平均（top-5）；欺诈是<strong>整体</strong>的（钓鱼账户每笔都是作案）就全序列平均。</p>
+  <div class="ex"><span class="tg">手算例子 · 两个真实用户的最终风险分</span>
+    <div class="math">黑样本 B_0291 的 top-5: 4.65(解绑卡) 4.13(绑卡) 3.98(改限额) 3.81(借款) 3.70(借款)<br>
+风险分 = (4.65+4.13+3.98+3.81+3.70) ÷ 5 = <b>4.05</b><br><br>
+白样本 W_0485 的 top-5: 3.73(借款) 2.02(解绑卡) 1.72(绑卡) 1.69(绑卡) 1.42(设备变更)<br>
+风险分 = (3.73+2.02+1.72+1.69+1.42) ÷ 5 = <b>2.12</b></div>
+    <p>两个细节：① 白样本也有一个 3.73 的单点高分（会话里巧合夹了笔借款）——<strong>这就是取 top-5 而不是 top-1 的原因</strong>：单个巧合拉不动均值，成串的异常才能过线；② 黑样本的 top-5 里三个直接落在爆发链上——这 5 个位置就是给审核员的"可疑操作清单"，分数自带证据。</p>
+  </div>
+</section>
+
+<!-- ============ 第 5 章 ============ -->
+<section id="c5">
+  <div class="sec-head"><span class="sec-no">第 5 章</span>
+    <div><h2>阈值与输出：分数怎么变成决策</h2><div class="sec-sub">阈值不是拍脑袋，是白样本分位数定的</div></div></div>
+  <p>现在每个用户一个风险分，在哪切一刀判"可疑"？方法：拿一批白样本算分，取它们的 <strong>99 分位数</strong>当阈值——数学上保证只误伤 1% 的正常用户。</p>
+  <div class="ex"><span class="tg">真实例子 · 这一刀切下去发生什么</span>
+    <div class="math">白样本分数的 99 分位 = <b>3.52</b> ← 阈值<br>
+B_0291 = 4.05 &gt; 3.52 → <b>命中 ⚑</b>（连同 top-5 可疑位置推给审核）<br>
+W_0485 = 2.12 &lt; 3.52 → 放行</div>
+    <p>这一刀实测：误报率 1%，抓住 70.8% 的黑样本。想抓更多就把刀左移——用误报换召回，和银行评分卡的运营方式完全一致。</p>
+  </div>
+  <p>三条运营规则：① 按用户活跃度分组各定各的阈值（活跃者与低频者分数分布不同，一刀切会系统性冤枉一群人）；② 每月用新白样本重算阈值（防用户行为漂移）；③ 输出只做<strong>排序+人工审核</strong>，不自动冻结——附带的 top-5 位置让审核员几分钟就能定位问题。</p>
+</section>
+
+<!-- ============ 第 6 章 ============ -->
+<section id="c6">
+  <div class="sec-head"><span class="sec-no">第 6 章</span>
+    <div><h2>融合：模型原理上吃不到的信号</h2><div class="sec-sub">一条拿真实数据换来的机制规律</div></div></div>
+  <p>有一类信号永远不会以"惊讶"的形式冒出来：<strong>账户级的静态比例特征</strong>。例如"打款方里首次出现的陌生账户占比"——钓鱼收款账户这个比例接近 100%（全是受害者，都是生面孔）。但如果把它做成字段塞进模型，模型学会"这类账户的对手方就是全新的"之后<strong>预测得很准、不惊讶</strong>，信号在预测通道里消失了。</p>
+  <p>正确用法：这类特征直接算出来当"第二个分数"，和模型的惊讶分做<strong>排名融合</strong>（各自排名加权平均）。</p>
+  <div class="ex"><span class="tg">真实例子 · 以太坊钓鱼数据(全真实)上的四行对照</span>
+    <div class="tbl-wrap"><table>
+      <tr><th>做法</th><th class="num">AUC</th><th class="num">误报1%时的召回</th></tr>
+      <tr><td>模型惊讶分（单独）</td><td class="num">0.9035</td><td class="num">14.7%</td></tr>
+      <tr><td>"首次对手方占比"特征（单独）</td><td class="num">0.8168</td><td class="num">—</td></tr>
+      <tr><td>把该特征塞进模型当字段 ✗</td><td class="num">0.9041（白费）</td><td class="num">—</td></tr>
+      <tr class="hl"><td><strong>两个分数排名融合 ✓</strong></td><td class="num"><b>0.9281</b></td><td class="num"><b>44.9%（翻 3 倍）</b></td></tr>
+    </table></div>
+    <p>同一个信号，走错通道无效，走对通道离"用全部标签的上限"(0.934)只剩 0.006。</p>
+  </div>
+  <div class="callout"><p><strong>规律：</strong>信号分两类——<b>模式类</b>（顺序、搭配、节奏的异常）交给模型的预测通道；<b>聚合类</b>（比例、计数、画像）走分数融合通道。落地采集字段时，"收款账号是否首次出现"属于必采。</p></div>
+</section>
+
+<!-- ============ 第 7 章 ============ -->
+<section id="c7">
+  <div class="sec-head"><span class="sec-no">第 7 章</span>
+    <div><h2>实验证明：数据说话</h2><div class="sec-sub">怎么测的、测出什么、包括失败在内的全部结果</div></div></div>
+
+  <h3>7.1 评测方法：先说清怎么算"分得开"</h3>
+  <ul>
+    <li><strong>切分</strong>：白样本 80% 训练 / 20% 留出；黑样本全部只进测试集。模型打分时不知道谁黑谁白，打完才拿标签"阅卷"；</li>
+    <li><strong>AUC</strong>：核心指标，含义是"随机抽一个黑、一个白，黑的分数更高的概率"。0.5=抛硬币，0.7=能辅助排序，0.9+=优秀，1.0=完美分开；</li>
+    <li><strong>oracle 参照（开卷考生）</strong>：每个数据集另训一个<em>拿着全部标签学</em>的传统模型，它的分数≈这份数据的理论上限。我们的方法是"闭卷考生"——<strong>看它离开卷差几分，才知道方法好坏；开卷都考砸的卷子，说明数据本身没信号。</strong></li>
+  </ul>
+
+  <h3>7.2 方法是一步步改出来的：三条真实的演进阶梯</h3>
+  <p>这些数字证明每个设计选择都有实验依据，不是拍脑袋：</p>
+  <div class="tbl-wrap"><table>
+    <tr><th>阶梯 1 · 打分方式（同一模型，只改打分）</th><th class="num">AUC</th></tr>
+    <tr><td>直接平均惊讶度（朴素做法）</td><td class="num">0.32（反向！）</td></tr>
+    <tr><td>+ 难度归一化 z-norm</td><td class="num">0.76</td></tr>
+    <tr class="hl"><td>+ top-5 池化</td><td class="num"><b>0.96</b></td></tr>
+  </table></div>
+  <div class="tbl-wrap"><table>
+    <tr><th>阶梯 2 · 编码字段（同一模型架构，只加字段）</th><th class="num">AUC</th><th class="num">误报1%召回</th></tr>
+    <tr><td>基础编码（类型+全局金额+间隔+时刻）</td><td class="num">0.683</td><td class="num">4.0%</td></tr>
+    <tr><td>+ result/渠道/ip 字段</td><td class="num">0.906</td><td class="num">15.0%</td></tr>
+    <tr><td>+ 个人金额桶</td><td class="num">0.879</td><td class="num">46.6%</td></tr>
+    <tr class="hl"><td>全部字段</td><td class="num"><b>0.912</b></td><td class="num"><b>46.0%</b></td></tr>
+  </table></div>
+  <div class="tbl-wrap"><table>
+    <tr><th>阶梯 3 · 出题方式与架构（操作流基准）</th><th class="num">AUC</th><th class="num">误报1%召回</th></tr>
+    <tr><td>完形填空（基线）</td><td class="num">0.926</td><td class="num">26.2%</td></tr>
+    <tr><td>自回归（只看历史）</td><td class="num">0.974</td><td class="num">23.8%</td></tr>
+    <tr class="hl"><td>自回归 + 时间偏置注意力</td><td class="num"><b>0.984</b></td><td class="num"><b>64.4%</b></td></tr>
+  </table></div>
+
+  <h3>7.3 总成绩单：六个数据集，零标签 vs 全标签上限</h3>
+  <div class="tbl-wrap"><table>
+    <tr><th>数据集</th><th>性质</th><th>规模</th><th class="num">零标签(本方案)</th><th class="num">全标签上限</th><th>达成率</th></tr>
+    <tr><td>rich（操作流基准）</td><td>合成</td><td>2000 用户</td><td class="num"><b>0.984</b></td><td class="num">~0.99</td><td>≈100%</td></tr>
+    <tr><td>temporal（操作流）</td><td>合成</td><td>1000 用户</td><td class="num">0.959</td><td class="num">0.999</td><td>96%</td></tr>
+    <tr class="hl"><td>Ethereum 钓鱼</td><td><b>✅ 全真实链上数据</b></td><td>680 钓鱼+5000 正常</td><td class="num"><b>0.928</b></td><td class="num">0.934</td><td>99%</td></tr>
+    <tr><td>Sparkov（卡消费）</td><td>拟真</td><td>185 万笔</td><td class="num">0.886</td><td class="num">0.880</td><td><b>反超 ★</b></td></tr>
+    <tr><td>TabFormer（卡消费）</td><td>拟真</td><td>2439 万笔</td><td class="num">0.752</td><td class="num">0.760</td><td>99%</td></tr>
+    <tr><td>AML（银行转账）</td><td>拟真</td><td>508 万笔</td><td class="num">0.712</td><td class="num">0.695</td><td><b>反超 ★</b></td></tr>
+  </table></div>
+  <p>★ 两处"零标签反超全标签"的解释：个人金额基线、对手方新旧这些信息维度，是拿标签学的传统模型（用统计特征）没有的——<strong>好的行为表示可以比标签更值钱</strong>。各数据集绝对分的高低（0.71~0.98）由数据本身信号强弱决定，方法稳定做到"上限的 93%~100%"。</p>
+
+  <h3>7.4 诚实部分：失败与边界（同样是证据）</h3>
+  <div class="tbl-wrap"><table>
+    <tr><th>负结果</th><th>数据</th><th>结论</th></tr>
+    <tr><td>数据无信号则全链路无效</td><td>PaySim：全标签模型也只有 0.61，本方案 0.56</td><td>不是方法失败，是这份数据的黑白行为本来没差别。<strong>接入新数据第一步永远是摸底</strong></td></tr>
+    <tr><td>训练污染超过 ~15% 开始失效</td><td>BankSim 污染 19%：卡在 0.736（上限 0.891）</td><td>自清洗（让模型自己踢脏数据）实测无效——被污染的模型给不出准的清洗信号。需少量标签预过滤</td></tr>
+    <tr><td>团伙协同信号看不到</td><td>AML 上限本身低（0.695）</td><td>跨账户的资金环路/共享设备是单账户序列的结构性盲区，需图方法补充（已列路线图）</td></tr>
+  </table></div>
+
+  <h3>7.5 汇总一句话</h3>
+  <div class="callout" style="border-left-color:var(--normal); background:var(--normal-soft)"><p><strong>六个可评测的数据集上，本方案在零标签条件下全部达到"全标签上限"的 93%~100%，其中两个反超；在唯一的全真实数据集（以太坊钓鱼）上 AUC 0.928，离上限只差 0.006。前提只有一个且可低成本预检：数据里得真的有行为信号。</strong></p></div>
+</section>
+
+<!-- ============ 第 8 章 ============ -->
+<section id="c8">
+  <div class="sec-head"><span class="sec-no">第 8 章</span>
+    <div><h2>常见疑问 FAQ</h2><div class="sec-sub">新读者最常问的八个问题</div></div></div>
+  <div class="dialog">
+    <p class="q">一个欺诈标签都不用，那你们的 AUC 是怎么算出来的？</p>
+    <p class="a"><strong>训练</strong>不用标签，<strong>阅卷</strong>必须用——评测数据集自带标注（合成数据是造的时候就知道、开源数据带官方标注），打完分再对答案。落地到无标签的真实环境时，评估需要攒几十个历史确认案件当"答案"；一个都没有就先上线做排序，用人工审核结果当答案。</p>
+    <p class="q">为什么不直接聚类（把用户分成几堆，看哪堆是骗子）？</p>
+    <p class="a">试过，这正是本项目的起点。无监督对比学习+聚类在同类数据上分离比 ≤1.15 且越训越差——数学上它的目标（把所有人互相推开）和"黑白各聚一堆"冲突。这次失败是转向现方案的原因，有完整实验记录。</p>
+    <p class="q">骗子知道了这套逻辑，能绕过吗？</p>
+    <p class="a">比绕过规则难得多。他要同时做到：操作节奏像正常人、金额符合<em>受害者本人</em>的历史惯例、收款方有历史记录、不触发失败登录——相当于"表现得像受害者本人"。理论上放慢节奏能稀释时序信号（对抗漂移，未实测，靠定期重训缓解），但金额和对手方两路信号很难伪装。</p>
+    <p class="q">数据格式和例子里不一样怎么办？</p>
+    <p class="a">编码是"固定骨架+自动适应"：词表、金额分位点从数据自动学；字段缺了填"不适用"桶；间隔桶边界按数据的时间粒度配置。配套工具（fraud_pipeline.py）五条命令完成接入，只有"数据根本不是事件流"（比如一行一用户的汇总表）才需要换方法。</p>
+    <p class="q">模型多大？要 GPU 吗？</p>
+    <p class="a">2 层 Transformer，约 9 万参数（普通图片分类模型的千分之一），笔记本 CPU 上几分钟训完、打分毫秒级。方案的力量在目标函数和打分设计，不在算力。</p>
+    <p class="q">攒到欺诈标签之后呢，这套就没用了？</p>
+    <p class="a">分三段：标签 &lt;10 个，纯本方案；10~50 个，标签只用来校准融合权重和阈值（实验证明拿去微调模型反而更差）；50+ 个，训一个监督模型接管主判别（能到 0.996），本方案转为它的输入特征 + <strong>新型欺诈兜底</strong>——监督模型只认识见过的骗术，没见过的还得靠"惊讶"。</p>
+    <p class="q">误报了怎么办？会不会冻结正常用户？</p>
+    <p class="a">方案定位是"排序+证据+人工审核"，不自动处置。阈值定在白样本 99 分位=误报率 1%，且按活跃度分组分别定，审核员拿着 top-5 可疑位置几分钟即可复核。</p>
+    <p class="q">最少要多少数据才能起步？</p>
+    <p class="a">经验值：1000+ 用户、每人 ≥10 个带精确时间戳的事件，即可训练；评估另需几十个已确认案件。数据到位后半天摸底、当天出分。</p>
+  </div>
+</section>
+
+<div class="foot">
+  <p>本教程数值出处（均可在仓库复现）：打分三步与真实预测例子 EXPERIMENT_MEM.md；编码消融 ENCODING_REPORT.md；
+  出题方式与架构 ARCH_REPORT.md；融合与负结果 IMPROVEMENT_REPORT.md；开源数据普查 OPEN_DATA_SURVEY.md；
+  完整分层系统 FINAL_SOLUTION.md。编码手算例子来自用户样本 N00010（walkthrough.py 实算）。
+  配套页面：方法详解(method-explained.html) · 流程拆解(pipeline-walkthrough.html) · 结果解读(results-explained.html)。</p>
+</div>
+</div>

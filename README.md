@@ -34,7 +34,8 @@ Masked Event Model / 自回归模型学"正常行为语法"，用逐位置预测
 
 本地（docs/，自包含 HTML，浏览器直接打开）：
 
-- **`method-explained.html` — 无监督方案详解（每步配真实例子，讲方法看这篇）**
+- **`tutorial.html` — 零基础完整教程（写给完全不了解方案的人：手算例子+全部实验证明，给新人看这篇）**
+- `method-explained.html` — 无监督方案详解（每步配真实例子）
 - `pipeline-walkthrough.html` — 处理流程逐步拆解（每步实算演示）
 - `results-explained.html` — 结果解读：交互阈值滑块 + AUC 直观化 + oracle 对比
 
