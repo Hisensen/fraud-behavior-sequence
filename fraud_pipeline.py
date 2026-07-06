@@ -822,9 +822,12 @@ def cmd_diagnose(args):
             verdict("C5", "✅", "检测到熵混淆且已被 z-norm 修复(raw反向→z-norm正常), 属预期行为")
         if best[0] - a_raw > 0.1:
             verdict("C5", "✅", f"归一化贡献显著(+{best[0]-a_raw:.2f})")
-        mean_a = zm.get("mean", 0)
-        topk_a = max(v for k, v in zm.items() if k.startswith("top"))             if any(k.startswith("top") for k in zm) else 0
-        if abs(mean_a - topk_a) > 0.05:
+        mean_a = zm.get("mean")
+        topk_a = max((v for k, v in zm.items() if k.startswith("top")),
+                     default=None)
+        # 只有 mean 与 top-k 两种池化都存在时才做对比, 避免单边误报
+        if mean_a is not None and topk_a is not None \
+                and abs(mean_a - topk_a) > 0.05:
             better = "mean(整体型异常)" if mean_a > topk_a else "top-k(局部型异常)"
             verdict("C5", "✅", f"池化方式敏感, 该数据适合 {better}")
 
