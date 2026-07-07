@@ -95,6 +95,15 @@ strong{font-weight:600}
   <p class="lede">每个数据集一张档案：来源规模 → 字段清单（含真实示例值）→ 原始数据原文 → 我们怎么处理 → 跑出什么结果。按"合成 → 真实 → 拟真"排列。</p>
 </header>
 <nav id="nav"></nav>
+
+<div class="ds" style="border-left:3px solid var(--warn)">
+  <div class="ds-head"><h2>先回答一个关键问题：为什么一半数据是"仿真"的？</h2></div>
+  <p><strong>因为真实的银行反欺诈数据在法律上不可能公开。</strong>账户流水、客户行为日志受《个人信息保护法》《数据安全法》和金融监管约束——全世界任何一家银行都不能把带欺诈标注的客户数据放到网上。所以公开领域能拿到的"真实"只有两类：<strong>区块链</strong>（链上交易天然全网公开，本页的以太坊钓鱼就是）和极少数高度脱敏的数据（往往脱敏到没有账户序列可言）。这是整个反欺诈研究领域的共同现实，不是本项目的选择。</p>
+  <p><strong>仿真数据是怎么造出来的？</strong>主流做法叫"基于智能体的仿真"（agent-based simulation）：先从<em>真实机构的聚合统计</em>（交易量分布、金额分布、商户结构——这些不涉及个人隐私，可以拿到）建一个虚拟世界，里面放几千个虚拟客户，每人有自己的收入、消费习惯、活跃时段，让他们"生活"几个月到几年产生流水；然后按已知的欺诈模式（盗刷剧本、洗钱的分散-归集模板）往里注入欺诈行为。IBM、瑞典的研究组做的 TabFormer/BankSim/PaySim/AMLSim 都是这个路数；我们自研的 temporal/rich 同理，只是把"信号设计权"抓在自己手里用于机制验证。</p>
+  <p><strong>仿真的价值与风险都要说清：</strong>价值是①有完整标注（虚拟世界里谁是骗子当然知道）②可控可复现③能造出"我们知道答案"的考卷来验证方法机制。风险是<strong>仿真质量直接决定结论可信度</strong>——PaySim 就是反面教材：它的欺诈是随机注入的、没有行为纹理，导致连全标签模型都分不开（0.61），我们据此把它判为不可用。</p>
+  <p style="margin-bottom:0"><strong>所以本项目的证据链刻意分了三级：</strong>合成数据（自研）证明<em>机制</em>成立 → 拟真数据（IBM 等机构级仿真）证明<em>工程</em>可迁移 → 真实数据（以太坊）证明<em>效果</em>真实存在。最终效果以你的业务真实数据为准——这也是为什么整套流水线的终点设计是"接入真实数据后半天摸底"。</p>
+</div>
+
 <div id="root"></div>
 <div class="foot">
   <p>结果出处：EXPERIMENT_MEM / ARCH_REPORT / IMPROVEMENT_REPORT / OPEN_DATA_SURVEY 等报告，均可在仓库复现。
@@ -109,6 +118,7 @@ var META = [
  {id:"temporal", name:"temporal 合成基准", tag:"syn", tagTxt:"合成", shape:"操作流",
   src:"自研生成器 gen_temporal.py", scale:[["1,000","用户"],["500/500","白/黑"],["~76","事件/人"]],
   task:"黑白词频/金额/时段严格对齐，唯一判别信号=敏感操作的时序密集性（盗号/套现/洗钱三种剧本）",
+  how:"自研仿真: 白样本=会话结构(密集购物小间隔)+孤立敏感操作(彼此≥6小时); 黑样本=同一生成机制+插入30分钟攻击链, 并从其事件预算中扣除以保持词频对齐; 再加10%/10%双向噪声防过拟合捷径",
   fields:[["type","事件类型(12种: 登录/消费/改密码…)"],["t","精确到秒的时间戳"],
           ["amount","金额(仅资金类事件)"],["channel","渠道 APP/WEB/POS"],["result","成功/失败(仅操作类)"]],
   pipe:"jsonl直接加载 → 整事件遮罩MEM → z-norm+top-5(仅type头)",
@@ -118,6 +128,7 @@ var META = [
  {id:"rich", name:"rich 富字段基准", tag:"syn", tagTxt:"合成", shape:"操作流",
   src:"自研生成器 gen_rich_data.py(对齐真实银行Schema)", scale:[["2,000","用户"],["1500/500","白/黑(盗号)"],["~67","事件/人"]],
   task:"四层信号分埋不同字段(失败登录/渠道ip/个人金额偏离/时序)，25%白样本有合法换机爆发堵时序捷径",
+  how:"自研仿真: 每个虚拟用户有个人画像(金额基线s_u跨数量级/偏好渠道/活跃时段); 攻击金额=8~18×受害者本人基线(全局分布内不显眼); 25%白样本加合法换机爆发堵时序捷径——所有捷径都被刻意堵死, 只留设计好的四层信号",
   fields:[["type","事件类型(12种)"],["t","时间戳"],["amount","金额"],["channel","渠道"],
           ["result","成功/失败"],["ip_change","登录IP是否变化(0/1)"]],
   pipe:"jsonl → 自回归+时间偏置(V8) → z-norm+top-5(SUM四头)",
@@ -135,6 +146,7 @@ var META = [
  {id:"tabformer", name:"TabFormer 信用卡", tag:"syn", tagTxt:"拟真(IBM)", shape:"消费流",
   src:"IBM GitHub·2000虚拟用户24年消费轨迹", scale:[["2,439万","笔交易"],["2,000","用户"],["0.12%","欺诈率"]],
   task:"窗口级(64笔)识别含欺诈窗口 + 逐笔定位",
+  how:"IBM 仿真: 虚拟世界里2000个有收入/地理/消费偏好的虚拟人『生活』24年刷卡; 欺诈由注入的盗刷模式产生(与线上交易强相关)",
   fields:null,
   pipe:"CSV按User聚合切窗 → 字段级遮罩+pamt(v3判黑) / 整事件遮罩+chip(v2定位) 双通道",
   res:[["0.752","MEM 窗口","good"],["0.760","oracle",""],["0.833","逐笔定位","good"]],
@@ -143,6 +155,7 @@ var META = [
  {id:"sparkov", name:"Sparkov 信用卡", tag:"syn", tagTxt:"拟真", shape:"消费流",
   src:"Kaggle kartik2112·Sparkov生成器", scale:[["185万","笔"],["999","客户"],["0.52%","欺诈率"]],
   task:"窗口级判黑+逐笔定位；训练直接用含0.5%天然污染的窗口(完全无监督协议)",
+  how:"Sparkov 开源生成器: 按人口统计画像(年龄/职业/地区)采样客户, 按商户类别分布生成消费; 欺诈用单独的『欺诈画像』(特定类别高额+夜间)注入",
   fields:null,
   pipe:"CSV聚合切窗 → 字段级遮罩(遮金额留类别) + 个人金额桶 → top-k",
   res:[["0.886","MEM(超oracle)","good"],["0.880","oracle",""],["0.885","逐笔定位","good"],["48.3%","R@FPR1%","good"]],
@@ -151,6 +164,7 @@ var META = [
  {id:"banksim", name:"BankSim 银行支付", tag:"syn", tagTxt:"拟真", shape:"消费流",
   src:"Kaggle ealaxi·西班牙银行仿真", scale:[["59.5万","笔"],["4,112","客户"],["1.21%","欺诈率"]],
   task:"窗口级判黑；时间仅天粒度",
+  how:"基于西班牙某银行真实聚合统计的多智能体仿真(Lopez-Rojas & Axelsson): 客户/商户智能体交互产生支付, 欺诈代理按剧本作案",
   fields:null,
   pipe:"CSV聚合切窗(间隔桶改天级) → 字段级遮罩",
   res:[["0.736","MEM","bad"],["0.891","oracle",""],["0.853","逐笔定位","good"]],
@@ -159,6 +173,7 @@ var META = [
  {id:"paysim", name:"PaySim 手机转账", tag:"syn", tagTxt:"拟真", shape:"转账",
   src:"Kaggle ealaxi·移动支付仿真", scale:[["636万","笔"],["0.13%","欺诈率"],["中位1","笔/发起方⚠️"]],
   task:"发起方序列不可行(中位出现1次)→改收款账户视角仍无信号",
+  how:"基于非洲某移动支付公司真实日志聚合统计的仿真(同 BankSim 作者); ⚠️欺诈是随机注入的TRANSFER→CASH_OUT, 无行为纹理——这正是它被判『无信号』的根源",
   fields:null,
   pipe:"收款账户视角聚合 → 整事件遮罩",
   res:[["0.561","MEM","bad"],["0.610","oracle(也不行)","bad"]],
@@ -167,6 +182,7 @@ var META = [
  {id:"aml", name:"IBM AML 反洗钱", tag:"syn", tagTxt:"拟真(IBM)", shape:"转账",
   src:"Kaggle ealtman2019·HI-Small", scale:[["508万","笔"],["4,388","洗钱账户"],["0.10%","洗钱率"]],
   task:"账户级识别洗钱参与账户",
+  how:"IBM AMLSim: 虚拟银行网络仿真转账; 洗钱按已知模式模板(分散转入fan-in/集中转出fan-out/环形cycle)注入——模式在账户之间, 这解释了单账户序列信号为何有限",
   fields:null,
   pipe:"按账户聚合(方式×方向/金额/间隔) → 整事件遮罩 → +对手方新旧字段",
   res:[["0.712","MEM+cnov(超oracle)","good"],["0.695","oracle",""],["0.614","对手方裸特征",""]],
@@ -209,6 +225,7 @@ META.forEach(function(d){
     "<span class='badge'>" + d.src + "</span></div>" +
     "<div class='chips'>" + chips + "</div>" +
     "<p style='font-size:13.5px; color:var(--ink2)'><strong>任务/信号设计：</strong>" + d.task + "</p>" +
+    (d.how ? "<p style='font-size:13.5px; color:var(--ink2)'><strong>仿真方式：</strong>" + d.how + "</p>" : "") +
     "<h3>字段清单</h3><div class='tbl-wrap'>" + fieldsHtml + "</div>" +
     "<h3>原始数据原文（未做任何处理）</h3><pre>" +
     raw.sample.replace(/</g,"&lt;") + "</pre>" +
