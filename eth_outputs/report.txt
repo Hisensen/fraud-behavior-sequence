@@ -1,0 +1,20 @@
+数据=eth_real.jsonl 形状=funds 训练白=4000 测试=1000白+680黑
+type mean   AUC=0.7811 KS=0.5014 R@FPR1%=7.1%
+type top3   AUC=0.7985 KS=0.5195 R@FPR1%=7.8%
+type top5   AUC=0.7950 KS=0.5152 R@FPR1%=9.3%
+type top10  AUC=0.7927 KS=0.5146 R@FPR1%=9.3%
+gap mean   AUC=0.3917 KS=0.0481 R@FPR1%=1.0%
+gap top3   AUC=0.7081 KS=0.3298 R@FPR1%=3.2%
+gap top5   AUC=0.6828 KS=0.2793 R@FPR1%=3.1%
+gap top10  AUC=0.6382 KS=0.1978 R@FPR1%=3.1%
+pamt mean   AUC=0.8809 KS=0.6572 R@FPR1%=6.9%
+pamt top3   AUC=0.8028 KS=0.5036 R@FPR1%=2.4%
+pamt top5   AUC=0.8276 KS=0.5604 R@FPR1%=4.1%
+pamt top10  AUC=0.8503 KS=0.6289 R@FPR1%=6.5%
+SUM mean   AUC=0.8222 KS=0.5485 R@FPR1%=4.1%
+SUM top3   AUC=0.8307 KS=0.5630 R@FPR1%=6.3%
+SUM top5   AUC=0.8333 KS=0.5776 R@FPR1%=7.4%
+SUM top10  AUC=0.8311 KS=0.5721 R@FPR1%=6.9%
+
+最优打分: pamt|mean  AUC=0.8809
+阈值@误报1% = 1.261 (白样本p99)
