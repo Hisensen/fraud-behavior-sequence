@@ -39,13 +39,13 @@ Masked Event Model / 自回归模型学"正常行为语法"，用逐位置预测
 - **`tracer.html` — 交互式全程追踪器（选真实账户、点任意事件格子看七站完整记录）**
 - `model-io.html` — 模型输入输出维度可视化（点任意事件列看编号→向量→概率的变形全程）
 - `datasets.html` — 实验数据档案馆（8个数据集的字段/原文样例/处理链路/结果）
+- `seq-showcase.html` — 6数据集行为序列实样（每集一黑一白完整序列，原始×编码逐行对照）
 - `pipeline-walkthrough.html` — 处理流程逐步拆解（每步实算演示）
 - `results-explained.html` — 结果解读：交互阈值滑块 + AUC 直观化 + oracle 对比
 
 在线（Claude Artifact）：
 
 - [方案全景：五步流水线 + 端到端实例](https://claude.ai/code/artifact/8951e47f-47c6-42ad-9969-3842e01e259c)
-- [6 数据集行为序列实样](https://claude.ai/code/artifact/d8de9f20-8dae-4cca-987c-adbdbf59cb6e)
 - [流程拆解](https://claude.ai/code/artifact/a5de43a9-a25b-4284-842b-0b3bb5de25d5) ·
   [结果解读](https://claude.ai/code/artifact/181ed083-e95f-48a7-a5b9-e1665a371045)
 
