@@ -1,0 +1,282 @@
+<title>模型的输入输出到底是什么 · 维度可视化</title>
+<style>
+:root{
+  --bg:#F5F7F6; --surface:#FFFFFF; --ink:#1B2723; --ink2:#5A6B66; --ink3:#8A9893;
+  --line:#E1E7E4; --line2:#CBD5D1;
+  --normal:#00997C; --normal-soft:rgba(0,153,124,.10);
+  --fraud:#C24A32; --fraud-soft:rgba(194,74,50,.10);
+  --warn:#9A6B1C; --warn-soft:rgba(154,107,28,.12);
+  --code-bg:#EEF2F0;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#121816; --surface:#1A2320; --ink:#E4EBE8; --ink2:#93A29C; --ink3:#6C7B76;
+    --line:#2A3531; --line2:#3A4744;
+    --normal:#26A69A; --normal-soft:rgba(38,166,154,.14);
+    --fraud:#E0704F; --fraud-soft:rgba(224,112,79,.14);
+    --warn:#D9A03F; --warn-soft:rgba(217,160,63,.15);
+    --code-bg:#222D29;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#121816; --surface:#1A2320; --ink:#E4EBE8; --ink2:#93A29C; --ink3:#6C7B76;
+  --line:#2A3531; --line2:#3A4744;
+  --normal:#26A69A; --normal-soft:rgba(38,166,154,.14);
+  --fraud:#E0704F; --fraud-soft:rgba(224,112,79,.14);
+  --warn:#D9A03F; --warn-soft:rgba(217,160,63,.15);
+  --code-bg:#222D29;
+}
+:root[data-theme="light"]{
+  --bg:#F5F7F6; --surface:#FFFFFF; --ink:#1B2723; --ink2:#5A6B66; --ink3:#8A9893;
+  --line:#E1E7E4; --line2:#CBD5D1;
+  --normal:#00997C; --normal-soft:rgba(0,153,124,.10);
+  --fraud:#C24A32; --fraud-soft:rgba(194,74,50,.10);
+  --warn:#9A6B1C; --warn-soft:rgba(154,107,28,.12);
+  --code-bg:#EEF2F0;
+}
+*{box-sizing:border-box}
+body{margin:0; background:var(--bg); color:var(--ink);
+  font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  font-size:15px; line-height:1.7}
+.wrap{max-width:940px; margin:0 auto; padding:40px 22px 90px}
+h1,h2{font-family:"Songti SC","STSong","Noto Serif SC",serif; text-wrap:balance; line-height:1.3}
+h1{font-size:28px; margin:8px 0 12px}
+h2{font-size:19px; margin:0}
+p{margin:0 0 10px}
+.eyebrow{font-size:12px; letter-spacing:.18em; color:var(--ink2)}
+.lede{color:var(--ink2); max-width:46em}
+.mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace; font-variant-numeric:tabular-nums}
+.station{background:var(--surface); border:1px solid var(--line); border-radius:12px;
+  padding:16px 20px; margin:16px 0}
+.st-head{display:flex; align-items:baseline; gap:10px; margin-bottom:6px}
+.st-no{font-family:ui-monospace,"SF Mono",Menlo,monospace; font-size:12px;
+  color:var(--surface); background:var(--ink); padding:1px 9px; border-radius:5px; white-space:nowrap}
+.st-tip{font-size:12.5px; color:var(--ink2); margin-bottom:10px}
+/* 维度旅程条 */
+.journey{display:flex; flex-wrap:wrap; gap:0; align-items:center; margin:14px 0 4px}
+.jstep{background:var(--code-bg); border:1.5px solid var(--line2); border-radius:8px;
+  padding:8px 12px; margin-right:26px; position:relative; margin-bottom:10px; text-align:center}
+.jstep::after{content:"→"; position:absolute; right:-21px; top:50%;
+  transform:translateY(-50%); color:var(--ink3); font-size:16px}
+.jstep:last-child::after{content:""}
+.jstep .shp{font-family:ui-monospace,"SF Mono",Menlo,monospace; font-weight:700; font-size:14px}
+.jstep .nm{font-size:11px; color:var(--ink2)}
+.jstep.hot{border-color:var(--fraud)}
+/* 输入网格 */
+.iogrid{overflow-x:auto}
+.iogrid table{border-collapse:separate; border-spacing:3px}
+.iogrid th{font-size:10.5px; color:var(--ink3); font-weight:600; padding:1px 2px;
+  text-align:center; font-family:ui-monospace,"SF Mono",Menlo,monospace}
+.iogrid td.lab{font-size:11px; color:var(--ink2); text-align:right; padding-right:8px;
+  font-family:ui-monospace,"SF Mono",Menlo,monospace; white-space:nowrap}
+.iogrid td.c{width:40px; height:30px; text-align:center; border-radius:5px;
+  background:var(--code-bg); border:1px solid var(--line);
+  font-family:ui-monospace,"SF Mono",Menlo,monospace; font-size:13px; cursor:pointer}
+.iogrid td.c:hover{border-color:var(--ink3)}
+.iogrid td.c.sel{border-color:var(--ink); box-shadow:0 0 0 1.5px var(--ink); font-weight:700}
+.evt-line{font-size:12.5px; color:var(--ink2); margin-top:8px}
+/* 查表 */
+.lookup{display:flex; flex-wrap:wrap; gap:10px; align-items:stretch; margin:10px 0}
+.lk{background:var(--code-bg); border:1px solid var(--line); border-radius:8px;
+  padding:8px 12px; font-size:12px; flex:1 1 130px; min-width:128px}
+.lk b{display:block; font-size:10.5px; color:var(--ink3)}
+.lk .val{font-family:ui-monospace,"SF Mono",Menlo,monospace; font-weight:700; font-size:15px}
+.lk .dim{font-size:11px; color:var(--ink2)}
+.vecbar{display:flex; height:30px; border-radius:6px; overflow:hidden;
+  border:1px solid var(--line2); margin:10px 0 2px}
+.vecbar div{display:flex; align-items:center; justify-content:center;
+  color:#fff; font-size:10.5px; font-family:ui-monospace,"SF Mono",Menlo,monospace; white-space:nowrap}
+.arrow-mid{text-align:center; color:var(--ink3); font-size:14px; margin:4px 0}
+/* 概率条 */
+.dist{margin:12px 0}
+.dist h4{font-size:13px; margin:12px 0 6px; font-family:inherit}
+.drow{display:grid; grid-template-columns:88px 1fr 128px; gap:8px;
+  align-items:center; margin:3px 0}
+.drow .l{font-size:11.5px; text-align:right; color:var(--ink2);
+  font-family:ui-monospace,"SF Mono",Menlo,monospace; white-space:nowrap}
+.drow .bar{height:14px; border-radius:0 4px 4px 0; background:var(--ink3);
+  opacity:.5; min-width:2px}
+.drow.truth .bar{background:var(--fraud); opacity:1}
+.drow.truth.calm .bar{background:var(--normal)}
+.drow .v{font-size:11.5px; color:var(--ink2);
+  font-family:ui-monospace,"SF Mono",Menlo,monospace; white-space:nowrap}
+.ce-box{background:var(--code-bg); border-radius:8px; padding:8px 14px;
+  font-family:ui-monospace,"SF Mono",Menlo,monospace; font-size:13px; margin-top:6px}
+table.ledger{border-collapse:collapse; width:100%; font-size:13.5px}
+.ledger th{text-align:left; font-weight:600; color:var(--ink3); font-size:12px;
+  border-bottom:1.5px solid var(--line2); padding:5px 10px 5px 0}
+.ledger td{border-bottom:1px solid var(--line); padding:5px 10px 5px 0}
+.ledger td.m{font-family:ui-monospace,"SF Mono",Menlo,monospace; white-space:nowrap}
+.callout{border-left:3px solid var(--warn); background:var(--warn-soft);
+  border-radius:0 8px 8px 0; padding:10px 16px; margin:14px 0; font-size:14px}
+.foot{margin-top:46px; border-top:1px solid var(--line); padding-top:12px;
+  font-size:12px; color:var(--ink3)}
+strong{font-weight:600}
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">反欺诈 · 模型输入输出可视化 · 数据来自真实钓鱼地址与真实模型 · 2026-07-06</div>
+  <h1>模型的输入和输出到底长什么样</h1>
+  <p class="lede">用那个真实钓鱼地址（0xca2909…，200 笔交易）现场演示。下面展示它第 30~41 笔的窗口，<strong>点任何一列</strong>，看这个事件的五个编号怎么查表变成向量、模型又对它输出了什么概率。先记住一句话：<strong>模型不输出"是不是骗子"，它只输出"每个位置该是什么"的概率分布</strong>——风险分是之后算出来的。</p>
+</header>
+
+<!-- 旅程总览 -->
+<div class="station">
+  <div class="st-head"><span class="st-no">总览</span><h2>维度旅程：五步变形</h2></div>
+  <div class="journey">
+    <div class="jstep"><div class="shp">[1, 200] ×5张</div><div class="nm">输入: 整数表</div></div>
+    <div class="jstep"><div class="shp">[1, 200, 80]</div><div class="nm">查表拼接</div></div>
+    <div class="jstep"><div class="shp">[1, 200, 64]</div><div class="nm">压缩+Transformer</div></div>
+    <div class="jstep hot"><div class="shp">[1, 200, K] ×3张</div><div class="nm">输出: 概率分布</div></div>
+    <div class="jstep"><div class="shp">[1, 200] → [1]</div><div class="nm">(模型外)打分</div></div>
+  </div>
+  <p style="font-size:12.5px; color:var(--ink2); margin:4px 0 0">1=这批只有1个用户；200=序列长度；K=各预测头的类别数(类型3/间隔9/个人金额8)。模型只负责中间三步。</p>
+</div>
+
+<!-- 输入 -->
+<div class="station">
+  <div class="st-head"><span class="st-no">第①步</span><h2>输入：几张 [1×200] 的整数表（这里展示第30~41列）</h2></div>
+  <div class="st-tip"><strong>竖着一列 = 一个事件</strong>，横着一行 = 一路字段。格子里就是桶编号。<strong>点一列试试 →</strong> 后面所有环节跟着变。</div>
+  <div class="iogrid" id="iogrid"></div>
+  <div class="evt-line" id="evtline"></div>
+</div>
+
+<!-- 查表 -->
+<div class="station">
+  <div class="st-head"><span class="st-no">第②步</span><h2>查表拼接：一列编号 → 一个 80 维向量</h2></div>
+  <div class="st-tip">选中列的每个编号去查各自的 Embedding 表（表内数值是训练学出来的），得到的向量拼接在一起：</div>
+  <div class="lookup" id="lookup"></div>
+  <div class="vecbar">
+    <div style="flex:32; background:var(--normal)">type 32维</div>
+    <div style="flex:16; background:#7a8a85">gap 16维</div>
+    <div style="flex:8; background:#a3b0ab">gamt 8维</div>
+    <div style="flex:16; background:var(--fraud)">pamt 16维</div>
+    <div style="flex:8; background:#c2a86b">hour 8维</div>
+  </div>
+  <div class="arrow-mid">↓ 拼接 = 80 维 → Linear(80→64) 压缩 ↓</div>
+  <div class="vecbar"><div style="flex:1; background:var(--ink3)">该事件的 64 维向量（进 Transformer 的最终形态）</div></div>
+  <p style="font-size:12.5px; color:var(--ink2); margin-top:6px">200 个事件都这么处理 → <span class="mono">[1, 200, 64]</span>。然后过 2 层 Transformer——<strong>形状不变</strong>，还是 <span class="mono">[1, 200, 64]</span>，变的是内容：每个位置的向量吸收了上下文（它前后发生了什么、隔多久）。</p>
+</div>
+
+<!-- 输出 -->
+<div class="station">
+  <div class="st-head"><span class="st-no">第③步</span><h2 id="out-title">输出：模型对这个位置的三份概率分布（真实数值）</h2></div>
+  <div class="st-tip">每个预测头输出一张 <span class="mono">[1, 200, K]</span> 的表。取选中位置那一行、过 softmax，就是下面的概率条。<span style="color:var(--fraud)">红条 = 真实答案落在的那一档</span>。</div>
+  <div class="dist" id="dists"></div>
+  <div class="ce-box" id="cebox"></div>
+</div>
+
+<!-- 打分 -->
+<div class="station">
+  <div class="st-head"><span class="st-no">第④步</span><h2>模型之外：概率 → 惊讶度 → 风险分</h2></div>
+  <div class="st-tip">这一段发生在模型外面，全是确定性计算，维度一路收缩：</div>
+  <table class="ledger">
+    <tr><th>操作</th><th>形状变化</th><th>本例真实数值</th></tr>
+    <tr><td>惊讶度 = −ln(真实答案的概率)</td><td class="m">[1,200,K] → [1,200]</td><td class="m" id="led-ce">—</td></tr>
+    <tr><td>z 归一化（减同难度均值÷标准差）</td><td class="m">[1,200] → [1,200]</td><td class="m" id="led-z">—</td></tr>
+    <tr><td>池化（本数据: 全序列平均）</td><td class="m">[1,200] → [1]</td><td class="m">200个z平均 = <b>1.882</b></td></tr>
+    <tr><td>对阈值（白样本p99）</td><td class="m">[1] → 判定</td><td class="m">1.882 ≥ 1.261 → <b style="color:var(--fraud)">命中⚑</b>（确为真实钓鱼地址）</td></tr>
+  </table>
+</div>
+
+<div class="callout"><strong>防晕锚点：</strong>输入是"编号表"、输出是"概率表"，两者的前两维都是 [用户数, 序列长度]——模型自始至终在做"逐位置的选择题"，从没做过"这个人是不是骗子"这道题。黑白之分是我们统计它"答题惊讶程度"后加出来的。</div>
+
+<div class="foot">
+  <p>本页所有数值来自真实模型 eth_outputs/model.pt 对真实钓鱼地址 0xca2909… 的推理输出（含 softmax 原始概率），
+  由 export 脚本导出，未做修饰。注：全流程批量打分用"步长遮罩"，与本页单点遮罩的惊讶度数值有微小出入，属正常。
+  配套：交互追踪器 tracer.html · 零基础教程 tutorial.html。</p>
+</div>
+</div>
+
+<script>
+var D = {"uid": "0xca2909f8c9e9f656eb468d53c84c23063e2dec4c", "L": 84, "score": 1.882, "thr": 1.261, "win": [30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41], "events": [{"t": "11-15 21:22", "ty": "转入", "a": 0.216493}, {"t": "11-15 21:22", "ty": "转入", "a": 0.180186}, {"t": "11-15 21:22", "ty": "转入", "a": 1.583052}, {"t": "11-15 21:22", "ty": "转入", "a": 3.981081}, {"t": "11-15 21:22", "ty": "转入", "a": 19.681095}, {"t": "11-15 21:22", "ty": "转入", "a": 0.308971}, {"t": "11-15 21:22", "ty": "转入", "a": 0.429087}, {"t": "11-15 21:22", "ty": "转入", "a": 2.409919}, {"t": "11-15 21:22", "ty": "转入", "a": 0.201555}, {"t": "11-15 21:22", "ty": "转入", "a": 0.080066}, {"t": "11-15 21:22", "ty": "转入", "a": 0.305352}, {"t": "11-15 21:22", "ty": "转入", "a": 0.119178}], "enc": {"type": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], "gamt": [4, 4, 6, 6, 7, 4, 4, 6, 4, 3, 4, 3], "pamt": [3, 3, 6, 7, 7, 3, 4, 6, 3, 2, 3, 2], "gap": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]}, "hour": [21.4, 21.4, 21.4, 21.4, 21.4, 21.4, 21.4, 21.4, 21.4, 21.4, 21.4, 21.4], "ce": {"type": [0.01, 0.01, 0.01, 0.02, 0.01, 0.01, 0.01, 0.01, 0.01, 0.02, 0.02, 0.02], "gap": [0.1, 0.1, 0.09, 0.08, 0.1, 0.08, 0.1, 0.07, 0.15, 0.09, 0.09, 0.11], "pamt": [1.8, 1.75, 2.86, 2.16, 2.49, 1.59, 2.28, 3.25, 1.83, 1.66, 1.77, 1.64]}, "z": {"type": [-0.3, -0.3, -0.29, -0.28, -0.3, -0.29, -0.29, -0.29, -0.3, -0.28, -0.28, -0.27], "gap": [-0.99, -0.99, -1.0, -1.0, -0.99, -1.01, -0.99, -1.01, -0.95, -1.0, -1.0, -0.99], "pamt": [1.71, 1.64, 3.05, 2.17, 2.58, 1.45, 2.31, 3.54, 1.74, 1.53, 1.67, 1.51]}, "dists": {"30": {"type": [0.0103, 0.9892, 0.0005], "gap": [0.8878, 0.0575, 0.0181, 0.0077, 0.0145, 0.0053, 0.0059, 0.0031, 0.0001], "pamt": [0.0261, 0.2003, 0.2119, 0.1527, 0.1395, 0.1016, 0.059, 0.1088]}, "31": {"type": [0.0121, 0.9871, 0.0008], "gap": [0.8871, 0.062, 0.0165, 0.0076, 0.0127, 0.0053, 0.0059, 0.0027, 0.0001], "pamt": [0.0206, 0.2179, 0.2206, 0.1365, 0.1199, 0.1023, 0.0569, 0.1254]}, "32": {"type": [0.0125, 0.9862, 0.0013], "gap": [0.9061, 0.0515, 0.0146, 0.0059, 0.0103, 0.0039, 0.0045, 0.0032, 0.0001], "pamt": [0.0266, 0.2019, 0.2232, 0.1309, 0.1027, 0.1074, 0.0617, 0.1456]}, "33": {"type": [0.0107, 0.9878, 0.0015], "gap": [0.9098, 0.0516, 0.0129, 0.0058, 0.0091, 0.0041, 0.0041, 0.0025, 0.0001], "pamt": [0.0262, 0.2241, 0.2088, 0.1242, 0.1238, 0.1031, 0.0689, 0.1209]}, "34": {"type": [0.009, 0.9901, 0.0009], "gap": [0.8966, 0.0496, 0.0155, 0.0082, 0.0143, 0.0052, 0.0067, 0.0038, 0.0001], "pamt": [0.0235, 0.1823, 0.214, 0.1676, 0.1506, 0.1143, 0.0495, 0.0982]}, "35": {"type": [0.0086, 0.9905, 0.0009], "gap": [0.916, 0.0414, 0.0127, 0.0064, 0.0122, 0.0043, 0.0041, 0.0027, 0.0001], "pamt": [0.0333, 0.1904, 0.2282, 0.1431, 0.1143, 0.1011, 0.0538, 0.1357]}, "36": {"type": [0.0115, 0.9875, 0.0009], "gap": [0.8972, 0.058, 0.0145, 0.0069, 0.011, 0.0048, 0.0046, 0.0028, 0.0002], "pamt": [0.0254, 0.2477, 0.2102, 0.1059, 0.0961, 0.1052, 0.067, 0.1426]}, "37": {"type": [0.0104, 0.9883, 0.0013], "gap": [0.9237, 0.0374, 0.0094, 0.0053, 0.0121, 0.0047, 0.0051, 0.0021, 0.0002], "pamt": [0.0148, 0.1606, 0.2052, 0.2155, 0.1759, 0.0957, 0.0435, 0.0888]}, "38": {"type": [0.0082, 0.9912, 0.0006], "gap": [0.87, 0.0669, 0.02, 0.009, 0.0186, 0.0057, 0.0064, 0.0032, 0.0002], "pamt": [0.0224, 0.2016, 0.2148, 0.1416, 0.1069, 0.1144, 0.0625, 0.1358]}, "39": {"type": [0.014, 0.9852, 0.0009], "gap": [0.9092, 0.0444, 0.0137, 0.007, 0.0121, 0.0051, 0.0054, 0.003, 0.0001], "pamt": [0.0298, 0.2032, 0.1959, 0.1647, 0.1476, 0.1106, 0.0557, 0.0924]}, "40": {"type": [0.0133, 0.9862, 0.0005], "gap": [0.9076, 0.0439, 0.0142, 0.0077, 0.0127, 0.0047, 0.0057, 0.0033, 0.0001], "pamt": [0.0286, 0.2162, 0.2124, 0.1403, 0.1323, 0.1049, 0.0558, 0.1094]}, "41": {"type": [0.015, 0.9843, 0.0008], "gap": [0.8936, 0.0534, 0.0154, 0.0067, 0.0146, 0.0056, 0.0067, 0.0038, 0.0001], "pamt": [0.0231, 0.1966, 0.2064, 0.1576, 0.1373, 0.1113, 0.0512, 0.1164]}}, "truth": {"type": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1], "gap": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "pamt": [3, 3, 6, 7, 7, 3, 4, 6, 3, 2, 3, 2]}};
+var GAP_LBL = ["≤1分","1-5分","5-30分","0.5-1时","1-6时","6-24时","1-7天",">7天","首"];
+var TYPE_LBL = {0:"转出", 1:"转入", 2:"其他"};
+var sel = 37;
+
+function fmtAmt(a){ return a == null ? "—" : a; }
+
+// 输入网格
+function renderGrid(){
+  var rows = [["type(类型)","type"],["gap(间隔桶)","gap"],
+              ["gamt(全局金额桶)","gamt"],["pamt(个人金额桶)","pamt"]];
+  var h = "<table><tr><th></th>";
+  D.win.forEach(function(k){ h += "<th>#"+k+"</th>"; });
+  h += "<th style='text-align:left'>…共"+D.L+"列</th></tr>";
+  rows.forEach(function(r){
+    h += "<tr><td class='lab'>"+r[0]+"</td>";
+    D.win.forEach(function(k,i){
+      h += "<td class='c"+(k===sel?" sel":"")+"' onclick='pick("+k+")'>"+
+           D.enc[r[1]][i]+"</td>";
+    });
+    h += "<td class='lab' style='text-align:left'>…</td></tr>";
+  });
+  h += "<tr><td class='lab'>hour(时刻)</td>";
+  D.win.forEach(function(k,i){
+    h += "<td class='c"+(k===sel?" sel":"")+"' onclick='pick("+k+")' style='font-size:10.5px'>"+
+         D.hour[i]+"</td>";
+  });
+  h += "<td class='lab' style='text-align:left'>…</td></tr></table>";
+  document.getElementById("iogrid").innerHTML = h;
+  var i = D.win.indexOf(sel), ev = D.events[i];
+  document.getElementById("evtline").innerHTML =
+    "选中列 <b>#"+sel+"</b> 的原始事件：<b>"+ev.t+" "+ev.ty+
+    (ev.a!=null?(" "+ev.a+" ETH"):"")+"</b> —— 它被编码成了这一列的 5 个数。";
+}
+
+// 查表
+function renderLookup(){
+  var i = D.win.indexOf(sel);
+  var items = [
+    ["type 表 (3行×32维)", D.enc.type[i], TYPE_LBL[D.enc.type[i]]||"", "→ 32维向量"],
+    ["gap 表 (9行×16维)", D.enc.gap[i], GAP_LBL[D.enc.gap[i]]||"", "→ 16维向量"],
+    ["gamt 表 (8行×8维)", D.enc.gamt[i], "全局档", "→ 8维向量"],
+    ["pamt 表 (8行×16维)", D.enc.pamt[i], "个人档", "→ 16维向量"],
+    ["hour: sin/cos", D.hour[i]+"时", "", "→ Linear → 8维"]];
+  document.getElementById("lookup").innerHTML = items.map(function(x){
+    return "<div class='lk'><b>"+x[0]+"</b><span class='val'>取第 "+x[1]+" 行"+
+      (x[2]?(" ("+x[2]+")"):"")+"</span><div class='dim'>"+x[3]+"</div></div>";
+  }).join("");
+}
+
+// 输出分布
+function renderDists(){
+  var i = D.win.indexOf(sel);
+  var heads = [["type","类型头 · [1,200,3] 取第"+sel+"行", TYPE_LBL],
+               ["gap","间隔头 · [1,200,9]", GAP_LBL],
+               ["pamt","个人金额头 · [1,200,8]", null]];
+  var html = "";
+  heads.forEach(function(hd){
+    var h = hd[0], dist = D.dists[sel][h], truth = D.truth[h][i];
+    html += "<h4>"+hd[1]+"（真实答案: 第"+truth+"档"+
+      (hd[2]&&hd[2][truth]?("="+hd[2][truth]):"")+"）</h4>";
+    dist.forEach(function(p, c){
+      var lbl = hd[2] ? (hd[2][c]!==undefined?hd[2][c]:("档"+c)) : ("档"+c);
+      var isT = c === truth;
+      var calm = isT && p >= 0.15;
+      html += "<div class='drow"+(isT?" truth":"")+(calm?" calm":"")+"'>"+
+        "<div class='l'>"+lbl+"</div>"+
+        "<div><div class='bar' style='width:"+Math.max(p*100,1)+"%'></div></div>"+
+        "<div class='v'>"+(p*100).toFixed(1)+"%"+(isT?" ← 真实答案":"")+"</div></div>";
+    });
+  });
+  document.getElementById("dists").innerHTML = html;
+  document.getElementById("out-title").textContent =
+    "输出：模型对位置 #"+sel+" 的三份概率分布（真实数值）";
+  // CE 汇总
+  var p = D.dists[sel]["pamt"][D.truth["pamt"][i]];
+  var ce = -Math.log(Math.max(p,1e-6));
+  document.getElementById("cebox").innerHTML =
+    "拿最重要的 pamt 头算惊讶度：真实答案概率 p = "+(p*100).toFixed(1)+
+    "% → 惊讶度 = −ln("+p.toFixed(3)+") = <b>"+ce.toFixed(2)+"</b>"+
+    (ce>2.5?"　← 模型没料到, 可疑":(ce<1.2?"　← 猜得准, 平静":""));
+  document.getElementById("led-ce").innerHTML =
+    "#"+sel+": −ln("+p.toFixed(3)+") = "+ce.toFixed(2);
+  document.getElementById("led-z").innerHTML =
+    "#"+sel+": z = "+D.z["pamt"][i].toFixed(2)+"（全流程批量值）";
+}
+
+function pick(k){ sel = k; renderGrid(); renderLookup(); renderDists(); }
+pick(37);
+</script>
