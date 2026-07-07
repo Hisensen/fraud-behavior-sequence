@@ -38,6 +38,7 @@ Masked Event Model / 自回归模型学"正常行为语法"，用逐位置预测
 - `method-explained.html` — 无监督方案详解（每步配真实例子）
 - **`tracer.html` — 交互式全程追踪器（选真实账户、点任意事件格子看七站完整记录）**
 - `model-io.html` — 模型输入输出维度可视化（点任意事件列看编号→向量→概率的变形全程）
+- `datasets.html` — 实验数据档案馆（8个数据集的字段/原文样例/处理链路/结果）
 - `pipeline-walkthrough.html` — 处理流程逐步拆解（每步实算演示）
 - `results-explained.html` — 结果解读：交互阈值滑块 + AUC 直观化 + oracle 对比
 

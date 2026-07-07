@@ -1,0 +1,220 @@
+<title>实验数据档案馆 · 8个数据集的字段/格式/结果</title>
+<style>
+:root{
+  --bg:#F5F7F6; --surface:#FFFFFF; --ink:#1B2723; --ink2:#5A6B66; --ink3:#8A9893;
+  --line:#E1E7E4; --line2:#CBD5D1;
+  --normal:#00997C; --normal-soft:rgba(0,153,124,.10);
+  --fraud:#C24A32; --fraud-soft:rgba(194,74,50,.10);
+  --warn:#9A6B1C; --warn-soft:rgba(154,107,28,.12);
+  --code-bg:#EEF2F0;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#121816; --surface:#1A2320; --ink:#E4EBE8; --ink2:#93A29C; --ink3:#6C7B76;
+    --line:#2A3531; --line2:#3A4744;
+    --normal:#26A69A; --normal-soft:rgba(38,166,154,.14);
+    --fraud:#E0704F; --fraud-soft:rgba(224,112,79,.14);
+    --warn:#D9A03F; --warn-soft:rgba(217,160,63,.15);
+    --code-bg:#222D29;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#121816; --surface:#1A2320; --ink:#E4EBE8; --ink2:#93A29C; --ink3:#6C7B76;
+  --line:#2A3531; --line2:#3A4744;
+  --normal:#26A69A; --normal-soft:rgba(38,166,154,.14);
+  --fraud:#E0704F; --fraud-soft:rgba(224,112,79,.14);
+  --warn:#D9A03F; --warn-soft:rgba(217,160,63,.15);
+  --code-bg:#222D29;
+}
+:root[data-theme="light"]{
+  --bg:#F5F7F6; --surface:#FFFFFF; --ink:#1B2723; --ink2:#5A6B66; --ink3:#8A9893;
+  --line:#E1E7E4; --line2:#CBD5D1;
+  --normal:#00997C; --normal-soft:rgba(0,153,124,.10);
+  --fraud:#C24A32; --fraud-soft:rgba(194,74,50,.10);
+  --warn:#9A6B1C; --warn-soft:rgba(154,107,28,.12);
+  --code-bg:#EEF2F0;
+}
+*{box-sizing:border-box}
+body{margin:0; background:var(--bg); color:var(--ink);
+  font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  font-size:15px; line-height:1.7}
+.wrap{max-width:960px; margin:0 auto; padding:42px 22px 90px}
+h1,h2{font-family:"Songti SC","STSong","Noto Serif SC",serif; text-wrap:balance; line-height:1.3}
+h1{font-size:29px; margin:8px 0 12px}
+h2{font-size:20px; margin:0}
+p{margin:0 0 10px}
+.eyebrow{font-size:12px; letter-spacing:.18em; color:var(--ink2)}
+.lede{color:var(--ink2); max-width:47em}
+.mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace; font-variant-numeric:tabular-nums}
+pre{background:var(--code-bg); border:1px solid var(--line); border-radius:8px;
+  padding:10px 14px; overflow-x:auto; font-size:11.5px; line-height:1.6;
+  font-family:ui-monospace,"SF Mono",Menlo,monospace; margin:8px 0}
+nav{display:flex; flex-wrap:wrap; gap:7px; margin:18px 0 6px; position:sticky; top:0;
+  background:var(--bg); padding:10px 0; z-index:5; border-bottom:1px solid var(--line)}
+nav a{text-decoration:none; color:var(--ink2); font-size:12.5px; padding:3px 11px;
+  border:1px solid var(--line2); border-radius:99px; white-space:nowrap}
+nav a:hover{color:var(--ink); border-color:var(--ink3)}
+.ds{background:var(--surface); border:1px solid var(--line); border-radius:12px;
+  padding:18px 22px; margin:20px 0; scroll-margin-top:60px}
+.ds-head{display:flex; flex-wrap:wrap; align-items:baseline; gap:9px;
+  border-bottom:2px solid var(--ink); padding-bottom:8px; margin-bottom:12px}
+.badge{font-size:11px; padding:1px 9px; border-radius:99px; border:1px solid var(--line2);
+  color:var(--ink2); white-space:nowrap}
+.badge.real{border-color:var(--normal); color:var(--normal); background:var(--normal-soft)}
+.badge.syn{border-color:var(--warn); color:var(--warn); background:var(--warn-soft)}
+.chips{display:flex; flex-wrap:wrap; gap:8px; margin:10px 0}
+.chip{background:var(--code-bg); border:1px solid var(--line); border-radius:7px;
+  padding:6px 12px; min-width:96px}
+.chip .v{font-family:ui-monospace,"SF Mono",Menlo,monospace; font-size:15px; font-weight:700}
+.chip .k{font-size:10.5px; color:var(--ink2)}
+.chip.good .v{color:var(--normal)} .chip.bad .v{color:var(--fraud)}
+h3{font-size:14px; margin:14px 0 6px; font-family:inherit; font-weight:700}
+table{border-collapse:collapse; width:100%; font-size:12.5px}
+.tbl-wrap{overflow-x:auto; max-height:240px; overflow-y:auto; margin:6px 0}
+th{text-align:left; font-weight:600; color:var(--ink3); font-size:11px;
+  border-bottom:1.5px solid var(--line2); padding:4px 10px 4px 0;
+  position:sticky; top:0; background:var(--surface)}
+td{border-bottom:1px solid var(--line); padding:4px 10px 4px 0; vertical-align:top}
+td.m{font-family:ui-monospace,"SF Mono",Menlo,monospace; font-size:12px; white-space:nowrap}
+.verdict{border-left:3px solid var(--normal); background:var(--normal-soft);
+  border-radius:0 8px 8px 0; padding:9px 15px; margin-top:12px; font-size:13.5px}
+.verdict.bad{border-left-color:var(--fraud); background:var(--fraud-soft)}
+.verdict.warn{border-left-color:var(--warn); background:var(--warn-soft)}
+.pipe{font-size:12.5px; color:var(--ink2); background:var(--code-bg);
+  border-radius:7px; padding:7px 12px; margin:6px 0;
+  font-family:ui-monospace,"SF Mono",Menlo,monospace}
+.foot{margin-top:50px; border-top:1px solid var(--line); padding-top:12px;
+  font-size:12px; color:var(--ink3)}
+strong{font-weight:600}
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">反欺诈 · 实验数据档案馆 · 全部样例为原始数据原文 · 2026-07-06</div>
+  <h1>我们到底用了哪些数据：8 个数据集完整档案</h1>
+  <p class="lede">每个数据集一张档案：来源规模 → 字段清单（含真实示例值）→ 原始数据原文 → 我们怎么处理 → 跑出什么结果。按"合成 → 真实 → 拟真"排列。</p>
+</header>
+<nav id="nav"></nav>
+<div id="root"></div>
+<div class="foot">
+  <p>结果出处：EXPERIMENT_MEM / ARCH_REPORT / IMPROVEMENT_REPORT / OPEN_DATA_SURVEY 等报告，均可在仓库复现。
+  oracle = 用全部标签训练的对照模型，代表该数据的信号上限。</p>
+</div>
+</div>
+
+<script>
+var RAW = {"temporal": {"cols": null, "sample": "{\n \"user_id\": \"W_0315\",\n \"label\": 0,\n \"events\": [\n  {\n   \"type\": \"消费\",\n   \"t\": \"2024-01-01 19:14:21\",\n   \"amount\": 14.69,\n   \"channel\": \"POS\"\n  },\n  {\n   \"type\": \"登录\",\n   \"t\": \"2024-01-01 19:15:58\",\n   \"result\": \"成功\"\n  },\n  {\n   \"type\": \"登录\",\n   \"t\": \"2024-01-01 19:17:52\",\n   \"result\": \"成功\"\n  }\n ]\n}"}, "rich": {"cols": null, "sample": "{\n \"user_id\": \"B_0205\",\n \"label\": 1,\n \"events\": [\n  {\n   \"type\": \"查余额\",\n   \"t\": \"2024-01-03 11:03:37\",\n   \"result\": \"成功\"\n  },\n  {\n   \"type\": \"借款\",\n   \"t\": \"2024-01-03 11:04:18\",\n   \"amount\": 323.47,\n   \"channel\": \"APP\"\n  },\n  {\n   \"type\": \"登录\",\n   \"t\": \"2024-01-03 11:06:44\",\n   \"result\": \"成功\",\n   \"ip_change\": 0\n  }\n ]\n}"}, "eth": {"cols": null, "sample": "{\n \"user_id\": \"0x40949225c4a1745a9946f6aaf763241c082cb9ac\",\n \"label\": 1,\n \"events\": [\n  {\n   \"type\": \"转入\",\n   \"t\": \"2018-05-02 01:17:04\",\n   \"amount\": 0.549655\n  },\n  {\n   \"type\": \"转入\",\n   \"t\": \"2018-05-02 03:09:22\",\n   \"amount\": 0.59\n  },\n  {\n   \"type\": \"转入\",\n   \"t\": \"2018-05-02 03:13:47\",\n   \"amount\": 0.021947\n  },\n  {\n   \"type\": \"转入\",\n   \"t\": \"2018-05-02 08:16:03\",\n   \"amount\": 0.05\n  }\n ]\n}"}, "tabformer": {"cols": [{"name": "User", "ex": "0"}, {"name": "Card", "ex": "0"}, {"name": "Year", "ex": "2002"}, {"name": "Month", "ex": "9"}, {"name": "Day", "ex": "1"}, {"name": "Time", "ex": "06:21"}, {"name": "Amount", "ex": "$134.09"}, {"name": "Use Chip", "ex": "Swipe Transaction"}, {"name": "Merchant Name", "ex": "3527213246127876953"}, {"name": "Merchant City", "ex": "La Verne"}, {"name": "Merchant State", "ex": "CA"}, {"name": "Zip", "ex": "91750.0"}, {"name": "MCC", "ex": "5300"}, {"name": "Errors?", "ex": "Technical Glitch,"}, {"name": "Is Fraud?", "ex": "No"}], "sample": "User,Card,Year,Month,Day,Time,Amount,Use Chip,Merchant Name,Merchant City,Merchant State,Zip,MCC,Errors?,Is Fraud?\n0,0,2002,9,1,06:21,$134.09,Swipe Transaction,3527213246127876953,La Verne,CA,91750.0,5300,,No\n0,0,2002,9,1,06:42,$38.48,Swipe Transaction,-727612092139916043,Monterey Park,CA,91754.0,5411,,No"}, "sparkov": {"cols": [{"name": "Unnamed: 0", "ex": "0"}, {"name": "trans_date_trans_time", "ex": "2019-01-01 00:00:18"}, {"name": "cc_num", "ex": "2703186189652095"}, {"name": "merchant", "ex": "fraud_Rippin, Kub and "}, {"name": "category", "ex": "misc_net"}, {"name": "amt", "ex": "4.97"}, {"name": "first", "ex": "Jennifer"}, {"name": "last", "ex": "Banks"}, {"name": "gender", "ex": "F"}, {"name": "street", "ex": "561 Perry Cove"}, {"name": "city", "ex": "Moravian Falls"}, {"name": "state", "ex": "NC"}, {"name": "zip", "ex": "28654"}, {"name": "lat", "ex": "36.0788"}, {"name": "long", "ex": "-81.1781"}, {"name": "city_pop", "ex": "3495"}, {"name": "job", "ex": "Psychologist, counsell"}, {"name": "dob", "ex": "1988-03-09"}, {"name": "trans_num", "ex": "0b242abb623afc57857568"}, {"name": "unix_time", "ex": "1325376018"}, {"name": "merch_lat", "ex": "36.011293"}, {"name": "merch_long", "ex": "-82.048315"}, {"name": "is_fraud", "ex": "0"}], "sample": "Unnamed: 0,trans_date_trans_time,cc_num,merchant,category,amt,first,last,gender,street,city,state,zip,lat,long,city_pop,job,dob,trans_num,unix_time,merch_lat,merch_long,is_fraud\n0,2019-01-01 00:00:18,2703186189652095,\"fraud_Rippin, Kub and Mann\",misc_net,4.97,Jennifer,Banks,F,561 Perry Cove,Moravian Falls,NC,28654,36.0788,-81.1781,3495,\"Psychologist, counselling\",1988-03-09,0b242abb623afc578575680df30655b9,1325376018,36.011293,-82.048315,0\n1,2019-01-01 00:00:44,630423337322,\"fraud_Heller, Gutmann and Zieme\",grocery_pos,107.23,Stephanie,Gill,F,43039 Riley Greens Suite 393,Orient,WA,99160,48.8878,-118.2105,149,Special educational needs teacher,1978-06-21,1f76529f8574734946361c461b024d99,1325376044,49.159047,-118.186462,0"}, "banksim": {"cols": [{"name": "step", "ex": "0"}, {"name": "customer", "ex": "'C1093826151'"}, {"name": "age", "ex": "'4'"}, {"name": "gender", "ex": "'M'"}, {"name": "zipcodeOri", "ex": "'28007'"}, {"name": "merchant", "ex": "'M348934600'"}, {"name": "zipMerchant", "ex": "'28007'"}, {"name": "category", "ex": "'es_transportation'"}, {"name": "amount", "ex": "4.55"}, {"name": "fraud", "ex": "0"}], "sample": "step,customer,age,gender,zipcodeOri,merchant,zipMerchant,category,amount,fraud\n0,'C1093826151','4','M','28007','M348934600','28007','es_transportation',4.55,0\n0,'C352968107','2','M','28007','M348934600','28007','es_transportation',39.68,0"}, "paysim": {"cols": [{"name": "step", "ex": "1"}, {"name": "type", "ex": "PAYMENT"}, {"name": "amount", "ex": "9839.64"}, {"name": "nameOrig", "ex": "C1231006815"}, {"name": "oldbalanceOrg", "ex": "170136.0"}, {"name": "newbalanceOrig", "ex": "160296.36"}, {"name": "nameDest", "ex": "M1979787155"}, {"name": "oldbalanceDest", "ex": "0.0"}, {"name": "newbalanceDest", "ex": "0.0"}, {"name": "isFraud", "ex": "0"}, {"name": "isFlaggedFraud", "ex": "0"}], "sample": "step,type,amount,nameOrig,oldbalanceOrg,newbalanceOrig,nameDest,oldbalanceDest,newbalanceDest,isFraud,isFlaggedFraud\n1,PAYMENT,9839.64,C1231006815,170136.0,160296.36,M1979787155,0.0,0.0,0,0\n1,PAYMENT,1864.28,C1666544295,21249.0,19384.72,M2044282225,0.0,0.0,0,0"}, "aml": {"cols": [{"name": "Timestamp", "ex": "2022/09/01 00:20"}, {"name": "From Bank", "ex": "10"}, {"name": "Account", "ex": "8000EBD30"}, {"name": "To Bank", "ex": "10"}, {"name": "Account.1", "ex": "8000EBD30"}, {"name": "Amount Received", "ex": "3697.34"}, {"name": "Receiving Currency", "ex": "US Dollar"}, {"name": "Amount Paid", "ex": "3697.34"}, {"name": "Payment Currency", "ex": "US Dollar"}, {"name": "Payment Format", "ex": "Reinvestment"}, {"name": "Is Laundering", "ex": "0"}], "sample": "Timestamp,From Bank,Account,To Bank,Account.1,Amount Received,Receiving Currency,Amount Paid,Payment Currency,Payment Format,Is Laundering\n2022/09/01 00:20,10,8000EBD30,10,8000EBD30,3697.34,US Dollar,3697.34,US Dollar,Reinvestment,0\n2022/09/01 00:20,3208,8000F4580,1,8000F5340,0.01,US Dollar,0.01,US Dollar,Cheque,0"}};
+
+var META = [
+ {id:"temporal", name:"temporal 合成基准", tag:"syn", tagTxt:"合成", shape:"操作流",
+  src:"自研生成器 gen_temporal.py", scale:[["1,000","用户"],["500/500","白/黑"],["~76","事件/人"]],
+  task:"黑白词频/金额/时段严格对齐，唯一判别信号=敏感操作的时序密集性（盗号/套现/洗钱三种剧本）",
+  fields:[["type","事件类型(12种: 登录/消费/改密码…)"],["t","精确到秒的时间戳"],
+          ["amount","金额(仅资金类事件)"],["channel","渠道 APP/WEB/POS"],["result","成功/失败(仅操作类)"]],
+  pipe:"jsonl直接加载 → 整事件遮罩MEM → z-norm+top-5(仅type头)",
+  res:[["0.959","MEM 零标签","good"],["0.999","oracle(规则)",""],["70.8%","R@FPR1%","good"]],
+  verdict:["good","方法主实验：证明纯时序信号可被零标签捕获；熵混淆大坑(0.32反向)在此发现并修复"]},
+
+ {id:"rich", name:"rich 富字段基准", tag:"syn", tagTxt:"合成", shape:"操作流",
+  src:"自研生成器 gen_rich_data.py(对齐真实银行Schema)", scale:[["2,000","用户"],["1500/500","白/黑(盗号)"],["~67","事件/人"]],
+  task:"四层信号分埋不同字段(失败登录/渠道ip/个人金额偏离/时序)，25%白样本有合法换机爆发堵时序捷径",
+  fields:[["type","事件类型(12种)"],["t","时间戳"],["amount","金额"],["channel","渠道"],
+          ["result","成功/失败"],["ip_change","登录IP是否变化(0/1)"]],
+  pipe:"jsonl → 自回归+时间偏置(V8) → z-norm+top-5(SUM四头)",
+  res:[["0.984","MEM 零标签","good"],["~0.99","oracle",""],["64.4%","R@FPR1%","good"]],
+  verdict:["good","编码消融(E0~E3)与架构探索(V0~V8)的基准场；个人金额基线字段的价值(+0.20)在此定量"]},
+
+ {id:"eth", name:"Ethereum 钓鱼", tag:"real", tagTxt:"✅ 全真实", shape:"资金流",
+  src:"XBlock/中山大学·真实链上交易+Etherscan官方钓鱼标注", scale:[["5,680","账户"],["680","真实钓鱼"],["~35","交易/账户"]],
+  task:"识别钓鱼收款地址：受害者纷纷打款(转入占比57.8% vs 正常23.8%)、金额模式反常",
+  fields:[["from/to","转出方/收款方地址"],["timestamp","unix秒"],["value","金额(ETH)"]],
+  pipe:"大图抽取→账户序列(方向/金额/间隔) → 整事件遮罩 → pamt头+mean池化 → 对手方特征融合",
+  res:[["0.904","MEM 零标签","good"],["0.928","+融合","good"],["0.934","oracle",""],["44.9%","R@FPR1%(融合)","good"]],
+  verdict:["good","含金量最高的一行：全真实数据上零标签达上限99%；'聚合特征走融合不进模型'的规律在此确立"]},
+
+ {id:"tabformer", name:"TabFormer 信用卡", tag:"syn", tagTxt:"拟真(IBM)", shape:"消费流",
+  src:"IBM GitHub·2000虚拟用户24年消费轨迹", scale:[["2,439万","笔交易"],["2,000","用户"],["0.12%","欺诈率"]],
+  task:"窗口级(64笔)识别含欺诈窗口 + 逐笔定位",
+  fields:null,
+  pipe:"CSV按User聚合切窗 → 字段级遮罩+pamt(v3判黑) / 整事件遮罩+chip(v2定位) 双通道",
+  res:[["0.752","MEM 窗口","good"],["0.760","oracle",""],["0.833","逐笔定位","good"]],
+  verdict:["good","已打平数据天花板；chip字段+0.10的教训在此(字段跟数据走)；双通道分工的依据"]},
+
+ {id:"sparkov", name:"Sparkov 信用卡", tag:"syn", tagTxt:"拟真", shape:"消费流",
+  src:"Kaggle kartik2112·Sparkov生成器", scale:[["185万","笔"],["999","客户"],["0.52%","欺诈率"]],
+  task:"窗口级判黑+逐笔定位；训练直接用含0.5%天然污染的窗口(完全无监督协议)",
+  fields:null,
+  pipe:"CSV聚合切窗 → 字段级遮罩(遮金额留类别) + 个人金额桶 → top-k",
+  res:[["0.886","MEM(超oracle)","good"],["0.880","oracle",""],["0.885","逐笔定位","good"],["48.3%","R@FPR1%","good"]],
+  verdict:["good","迭代最多的一份(0.557→0.886)：字段遮罩与个人基线两大改进的真实数据裁决场；零标签反超全标签的实例"]},
+
+ {id:"banksim", name:"BankSim 银行支付", tag:"syn", tagTxt:"拟真", shape:"消费流",
+  src:"Kaggle ealaxi·西班牙银行仿真", scale:[["59.5万","笔"],["4,112","客户"],["1.21%","欺诈率"]],
+  task:"窗口级判黑；时间仅天粒度",
+  fields:null,
+  pipe:"CSV聚合切窗(间隔桶改天级) → 字段级遮罩",
+  res:[["0.736","MEM","bad"],["0.891","oracle",""],["0.853","逐笔定位","good"]],
+  verdict:["warn","卡在训练污染19%(超10%验证上限)——'unlabeled当白样本'前提的已知边界实证；自清洗救不了(负结果)，需少量标签预过滤"]},
+
+ {id:"paysim", name:"PaySim 手机转账", tag:"syn", tagTxt:"拟真", shape:"转账",
+  src:"Kaggle ealaxi·移动支付仿真", scale:[["636万","笔"],["0.13%","欺诈率"],["中位1","笔/发起方⚠️"]],
+  task:"发起方序列不可行(中位出现1次)→改收款账户视角仍无信号",
+  fields:null,
+  pipe:"收款账户视角聚合 → 整事件遮罩",
+  res:[["0.561","MEM","bad"],["0.610","oracle(也不行)","bad"]],
+  verdict:["bad","判'数据无信号'弃用：欺诈是随机注入的、行为无纹理，连全标签模型都分不开——不是方法的失败，是这份数据不值得用的证据"]},
+
+ {id:"aml", name:"IBM AML 反洗钱", tag:"syn", tagTxt:"拟真(IBM)", shape:"转账",
+  src:"Kaggle ealtman2019·HI-Small", scale:[["508万","笔"],["4,388","洗钱账户"],["0.10%","洗钱率"]],
+  task:"账户级识别洗钱参与账户",
+  fields:null,
+  pipe:"按账户聚合(方式×方向/金额/间隔) → 整事件遮罩 → +对手方新旧字段",
+  res:[["0.712","MEM+cnov(超oracle)","good"],["0.695","oracle",""],["0.614","对手方裸特征",""]],
+  verdict:["warn","序列信号先天有限(洗钱主信号在跨账户图里)——图盲区的实证；'对手方新旧'字段+5.6pp在此验证"]},
+];
+
+var nav = document.getElementById("nav");
+var root = document.getElementById("root");
+META.forEach(function(d){
+  var a = document.createElement("a");
+  a.href = "#" + d.id; a.textContent = d.name.split(" ")[0];
+  nav.appendChild(a);
+
+  var raw = RAW[d.id];
+  var fieldsHtml = "";
+  if (d.fields){
+    fieldsHtml = d.fields.map(function(f){
+      return "<tr><td class='m'>" + f[0] + "</td><td>" + f[1] + "</td></tr>";
+    }).join("");
+    fieldsHtml = "<table><tr><th>字段</th><th>含义</th></tr>" + fieldsHtml + "</table>";
+  } else if (raw.cols){
+    fieldsHtml = raw.cols.map(function(c){
+      return "<tr><td class='m'>" + c.name + "</td><td class='m'>" + c.ex + "</td></tr>";
+    }).join("");
+    fieldsHtml = "<table><tr><th>列名(共" + raw.cols.length + "列)</th><th>真实示例值</th></tr>" + fieldsHtml + "</table>";
+  }
+  var chips = d.scale.map(function(s){
+    return "<div class='chip'><div class='v'>" + s[0] + "</div><div class='k'>" + s[1] + "</div></div>";
+  }).join("");
+  var res = d.res.map(function(r){
+    return "<div class='chip " + (r[2]||"") + "'><div class='v'>" + r[0] + "</div><div class='k'>" + r[1] + "</div></div>";
+  }).join("");
+
+  var sec = document.createElement("div");
+  sec.className = "ds"; sec.id = d.id;
+  sec.innerHTML =
+    "<div class='ds-head'><h2>" + d.name + "</h2>" +
+    "<span class='badge " + (d.tag === "real" ? "real" : "syn") + "'>" + d.tagTxt + "</span>" +
+    "<span class='badge'>" + d.shape + "</span>" +
+    "<span class='badge'>" + d.src + "</span></div>" +
+    "<div class='chips'>" + chips + "</div>" +
+    "<p style='font-size:13.5px; color:var(--ink2)'><strong>任务/信号设计：</strong>" + d.task + "</p>" +
+    "<h3>字段清单</h3><div class='tbl-wrap'>" + fieldsHtml + "</div>" +
+    "<h3>原始数据原文（未做任何处理）</h3><pre>" +
+    raw.sample.replace(/</g,"&lt;") + "</pre>" +
+    "<h3>处理链路</h3><div class='pipe'>" + d.pipe + "</div>" +
+    "<h3>结果</h3><div class='chips'>" + res + "</div>" +
+    "<div class='verdict " + (d.verdict[0]==="good"?"":d.verdict[0]) + "'>" + d.verdict[1] + "</div>";
+  root.appendChild(sec);
+});
+</script>
