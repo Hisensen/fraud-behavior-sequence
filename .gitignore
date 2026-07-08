@@ -16,3 +16,14 @@ demo_new.jsonl
 demo_outputs/
 demo_new_scores.csv
 outputs/
+
+# webapp 运行时产物 / 可重训的模型包 / 根目录数据的副本(cp ../xxx.jsonl 即可)
+webapp.log
+webapp.pid
+fraud_system/webapp.log
+fraud_system/webapp.pid
+fraud_system/models/
+fraud_system/data_rich.jsonl
+fraud_system/data_temporal.jsonl
+fraud_system/eth_real.jsonl
+fraud_system/user_sample.jsonl

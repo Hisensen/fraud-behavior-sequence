@@ -49,7 +49,24 @@ Masked Event Model / 自回归模型学"正常行为语法"，用逐位置预测
 
 ## 一体化系统（fraud_system/，自包含）
 
-7 个有效方法拼成的完整流水线，两条命令复现：
+7 个有效方法拼成的完整流水线。**Web 应用**（训练→LLM 定类→单账户测试全流程）：
+
+```bash
+cd fraud_system && python webapp.py serve     # → http://127.0.0.1:8765
+```
+
+- 训练页：选 jsonl → 第1步训练（MEM+iForest+近邻库+聚类，簇数轮廓系数自选）
+  → 第2步 LLM 自动定类（`name_clusters.py`：每簇无标签画像卡 → claude 盲命名 → 写回模型）
+- 测试页：选账户或粘贴 JSON → 体检单（判决/四通道/LLM人群类别/LLM手法类别/案件检索/逐笔定位；
+  含历史不足与低置信归因两道保险）
+- 验证过的 LLM 盲命名 vs 真值：8/8 语义命中（消费还款族↔工薪族、盗号速转↔盗号爆发…）；
+  真实以太坊上独立命名出「纯转入归集」= 钓鱼收款地址画像
+
+可视化证据（`viz_clusters.py / viz_eth.py / viz_temporal.py` → 三张 png）：
+**训练像离心机——身份留在嵌入、反常甩进指纹**。人空间只对专职型骗子有效（以太坊 0.946），
+寄生型欺诈只在偏移空间现形（词频对齐基准 0.946 vs 人空间 0.560）；偏移空间三个数据集全胜。
+
+批处理版复现：
 
 ```bash
 cd fraud_system && python run_system.py && python make_report.py  # → report.html

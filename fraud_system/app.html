@@ -1,0 +1,195 @@
+<!doctype html><html lang="zh"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>反欺诈系统 · 训练与测试台</title>
+<style>
+:root{--bg:#faf9f6;--card:#fff;--ink:#1e2528;--sub:#5b6b70;--line:#e3ded4;
+--teal:#00997C;--teal-bg:#e6f5f1;--red:#C24A32;--red-bg:#faece8;
+--gold:#9a7b2d;--gold-bg:#f7f1df;--blue:#2d5f9a;--blue-bg:#e8eff8;--code:#f0ede6}
+@media (prefers-color-scheme:dark){:root{--bg:#14181a;--card:#1d2326;--ink:#e8e6e0;
+--sub:#9aa8ad;--line:#323b40;--teal:#2fbf9e;--teal-bg:#12312a;--red:#e0745c;
+--red-bg:#3a201a;--gold:#cfa84e;--gold-bg:#332b16;--blue:#6fa3d8;--blue-bg:#1a2836;--code:#262d31}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);
+font:15px/1.75 -apple-system,"PingFang SC",sans-serif}
+.wrap{max-width:960px;margin:0 auto;padding:26px 18px 80px}
+h1{font-family:"Songti SC",serif;font-size:26px;margin:4px 0 2px}
+.sub{color:var(--sub);font-size:13px}
+.tabs{display:flex;gap:8px;margin:18px 0}
+.tab{padding:8px 22px;border-radius:99px;border:1px solid var(--line);cursor:pointer;
+font-weight:700;background:var(--card)}
+.tab.on{background:var(--teal);color:#fff;border-color:var(--teal)}
+.panel{display:none}.panel.on{display:block}
+.card{background:var(--card);border:1px solid var(--line);border-radius:13px;
+padding:18px 22px;margin:14px 0}
+label{font-size:13px;color:var(--sub);display:block;margin:10px 0 3px}
+select,input{width:100%;padding:8px 12px;border:1px solid var(--line);border-radius:9px;
+background:var(--bg);color:var(--ink);font-size:14px}
+textarea{width:100%;height:90px;padding:8px 12px;border:1px solid var(--line);
+border-radius:9px;background:var(--bg);color:var(--ink);font:12px/1.5 Menlo,monospace}
+button{padding:9px 26px;border:none;border-radius:9px;background:var(--teal);
+color:#fff;font-size:15px;font-weight:700;cursor:pointer;margin-top:14px}
+button:disabled{opacity:.45;cursor:default}
+.log{background:var(--code);border-radius:10px;padding:10px 14px;margin-top:14px;
+font:12.5px/1.7 Menlo,monospace;max-height:340px;overflow:auto;white-space:pre-wrap}
+.row{display:flex;gap:14px;flex-wrap:wrap}.row>div{flex:1;min-width:200px}
+.verdict{display:flex;align-items:center;gap:16px;padding:16px 20px;border-radius:12px;margin:12px 0}
+.verdict.bad{background:var(--red-bg)}.verdict.ok{background:var(--teal-bg)}
+.verdict .big{font-size:30px;font-weight:800}
+.bar{position:relative;background:var(--code);border-radius:6px;height:24px;margin:4px 0 10px}
+.bar div{height:100%;border-radius:6px;transition:width .5s}
+.bar span{position:absolute;right:8px;top:0;font:12px/24px Menlo,monospace}
+table{border-collapse:collapse;font-size:13px;width:100%}
+th,td{border:1px solid var(--line);padding:5px 10px;text-align:left}
+th{background:var(--code);white-space:nowrap}
+.pill{display:inline-block;font-size:12px;padding:1px 10px;border-radius:99px;font-weight:700}
+.p-red{background:var(--red-bg);color:var(--red)}.p-teal{background:var(--teal-bg);color:var(--teal)}
+.p-gold{background:var(--gold-bg);color:var(--gold)}
+h3{font-family:"Songti SC",serif;font-size:17px;margin:20px 0 6px;color:var(--teal)}
+.hint{font-size:12.5px;color:var(--sub)}
+</style></head><body><div class="wrap">
+<h1>反欺诈一体化系统 · 训练与测试台</h1>
+<p class="sub">MEM惊讶度 + iForest + 近邻检索 三通道融合 · 人群归属 · 手法归因 · 逐笔定位（本地运行，数据不出机器）</p>
+
+<div class="tabs">
+<div class="tab on" onclick="tab(0)">🛠 训练</div>
+<div class="tab" onclick="tab(1)">🔍 测试</div>
+</div>
+
+<!-- 训练 -->
+<div class="panel on" id="p0"><div class="card">
+<div class="row">
+<div><label>训练数据（本文件夹内 .jsonl，只用其中白样本训练）</label>
+<select id="tData"></select></div>
+<div><label>模型名字</label><input id="tName" value="model_v1"></div>
+<div><label>训练轮数（30 轮约 15 分钟）</label><input id="tEp" type="number" value="30"></div>
+</div>
+<button id="tBtn" onclick="train()">第 1 步：开始训练</button>
+<button id="nBtn" onclick="nameLLM()" style="background:var(--blue)">第 2 步：LLM 自动定类 🏷</button>
+<div class="hint" style="margin-top:8px">第 1 步：MEM 填空模型（只看白样本）→ 惊讶度基线 → iForest → 近邻库 → 无监督聚类（此时类别只叫"簇0/1/2…"）→ 存入 models/。
+第 2 步：给全量数据打分划出报警池 → 人群簇+手法簇各提取无标签行为画像卡 → 调用 LLM 盲分析给出类别名和定义 → 写回模型。之后测试任何新账户，直接输出这些 LLM 定好的类别。（约 10 分钟）</div>
+<div class="log" id="tLog" style="display:none"></div>
+</div></div>
+
+<!-- 测试 -->
+<div class="panel" id="p1"><div class="card">
+<div class="row">
+<div><label>选择训练好的模型</label><select id="sModel" onchange="loadAccounts()"></select></div>
+<div><label>选择要测试的账户（🔴=真黑样本 ⚪=真白样本，选完点测试看系统能否抓对）</label>
+<select id="sAcc"></select></div>
+</div>
+<label>或者直接粘贴一条账户 JSON（{"user_id":..,"events":[...]}，留空则用上面选的账户）</label>
+<textarea id="sJson" placeholder='{"user_id":"X001","events":[{"type":"登录","t":"2024-01-01 09:00:00","channel":"APP","result":"成功","ip_change":0}, ...]}'></textarea>
+<button id="sBtn" onclick="score()">开始测试</button>
+</div>
+<div id="result"></div></div>
+
+<script>
+const $=id=>document.getElementById(id);
+function tab(i){document.querySelectorAll('.tab').forEach((t,j)=>t.classList.toggle('on',i==j));
+document.querySelectorAll('.panel').forEach((p,j)=>p.classList.toggle('on',i==j));
+if(i==1)loadModels();}
+async function j(u,opt){const r=await fetch(u,opt);return r.json()}
+
+async function init(){
+  const ds=await j('/api/datasets');
+  $('tData').innerHTML=ds.map(d=>`<option>${d}</option>`).join('');
+  const t=await j('/api/trainlog');
+  if(t.running){$('tLog').style.display='block';poll();}
+  loadModels();
+}
+async function train(){
+  $('tBtn').disabled=true;$('tLog').style.display='block';$('tLog').textContent='提交训练…';
+  const r=await j('/api/train',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({data:$('tData').value,name:$('tName').value,epochs:+$('tEp').value})});
+  if(r.err){$('tLog').textContent='❌ '+r.err;$('tBtn').disabled=false;return}
+  poll();
+}
+async function nameLLM(){
+  $('nBtn').disabled=true;$('tLog').style.display='block';$('tLog').textContent='提交 LLM 定类任务…';
+  const r=await j('/api/name',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({model:$('tName').value})});
+  if(r.err){$('tLog').textContent='❌ '+r.err;$('nBtn').disabled=false;return}
+  poll();
+}
+async function poll(){
+  const t=await j('/api/trainlog');
+  $('tLog').textContent=t.log.join('\n');
+  $('tLog').scrollTop=99999;
+  if(t.running){$('tBtn').disabled=true;$('nBtn').disabled=true;setTimeout(poll,2000)}
+  else{$('tBtn').disabled=false;$('nBtn').disabled=false;loadModels()}
+}
+let MODELS=[];
+async function loadModels(){
+  MODELS=await j('/api/models');
+  $('sModel').innerHTML=MODELS.map(m=>
+    `<option value="${m.name}">${m.name}（数据:${m.data} · ${m.trained_at}${m.has_caselib?' · 含案件库':''}）</option>`).join('')
+    ||'<option value="">（还没有模型，先去训练页）</option>';
+  loadAccounts();
+}
+async function loadAccounts(){
+  const m=MODELS.find(x=>x.name==$('sModel').value);
+  if(!m){$('sAcc').innerHTML='';return}
+  const as=await j('/api/accounts?data='+encodeURIComponent(m.data));
+  $('sAcc').innerHTML=as.map(a=>{
+    const mark=a.label==1?'🔴':'⚪',info=a.label==1?(a.btype||'黑'):(a.wtype||'白');
+    return `<option value="${a.uid}">${mark} ${a.uid}（${info}）</option>`}).join('');
+}
+function bar(v,label){
+  const c=v>=95?'var(--red)':v>=80?'var(--gold)':'var(--teal)';
+  const word=v>=99?'⚠️ 报警级':v>=95?'偏高':v>=80?'略高':'正常';
+  return `<div style="font-size:12.5px;color:var(--sub)">${label}</div>
+  <div class="bar"><div style="width:${Math.max(v,2)}%;background:${c}"></div><span>比 ${v.toFixed(1)}% 的正常人可疑 · ${word}</span></div>`;
+}
+async function score(){
+  $('sBtn').disabled=true;$('result').innerHTML='<div class="card">⏳ 编码 → 模型推理 → 三通道打分 → 检索归因…（首次加载模型约 10 秒）</div>';
+  const body={model:$('sModel').value};
+  const txt=$('sJson').value.trim();
+  if(txt){try{body.record=JSON.parse(txt)}catch(e){alert('JSON 解析失败: '+e);$('sBtn').disabled=false;return}}
+  else{const m=MODELS.find(x=>x.name==$('sModel').value);body.data=m.data;body.uid=$('sAcc').value}
+  const r=await j('/api/score',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  $('sBtn').disabled=false;
+  if(r.err){$('result').innerHTML=`<div class="card">❌ ${r.err}</div>`;return}
+  render(r);
+}
+function render(r){
+  const truth=r.truth.label==1?`<span class="pill p-red">真实身份: 黑样本${r.truth.btype?' · '+r.truth.btype:''}</span>`
+    :r.truth.label==0?`<span class="pill p-teal">真实身份: 白样本${r.truth.wtype?' · '+r.truth.wtype:''}</span>`:'';
+  const correct=r.truth.label==null?'':((r.truth.label==1)==r.alarmed?' ✅ 判断正确':' ❌ 判断错误');
+  let h=`<div class="card">
+  <div class="verdict ${r.alarmed?'bad':'ok'}">
+    <div class="big">${r.alarmed?'🔴 报警':'🟢 放行'}</div>
+    <div>账户 <b>${r.uid}</b> · ${r.n_events} 笔行为 · 融合可疑度 <b>${r.fused.toFixed(1)}</b>（报警线 ${r.thr.toFixed(1)}）<br>${truth}<b>${correct}</b></div>
+  </div>
+  <h3>① 可疑吗 —— 三通道各自的判断（该账户比百分之几的正常人可疑）</h3>
+  ${bar(r.channels.mem_mean,'MEM 惊讶度 · mean（弥漫型欺诈探测器）')}
+  ${bar(r.channels.mem_top5,'MEM 惊讶度 · top-5（爆发型欺诈探测器，参考通道）')}
+  ${bar(r.channels.iforest,'iForest 统计异常（行为配比探测器）')}
+  ${bar(r.channels.knn,'近邻距离（"在正常人里找不到同类"探测器）')}
+  <h3>② 他是哪类人 —— 人群归属${r.population.definition?'（类别由 LLM 分析行为后定义）':''}</h3>
+  <p>归入 <b>簇${r.population.k}「${r.population.name}」</b>（该群 ${r.population.n} 人 · 主渠道 ${r.population.top_channel} · 凌晨活跃占比 ${(r.population.night*100).toFixed(0)}%）· 距簇心 ${r.population.dist.toFixed(2)}</p>
+  ${r.population.definition?`<p class="hint">「${r.population.name}」：${r.population.definition}</p>`:''}`;
+  if(r.mo){h+=`<h3>③ 属于什么异常类别 —— 手法归类（类别由 LLM 定义）</h3>
+  <p><span class="pill p-red" style="font-size:15px">${r.mo.name}</span> —— ${r.mo.definition}（距该手法簇心 ${r.mo.dist.toFixed(1)}）</p>`;}
+  if(r.warning){h+=`<div style="background:var(--gold-bg);border-left:4px solid var(--gold);border-radius:0 10px 10px 0;padding:10px 16px;margin:12px 0">⚠️ <b>历史不足</b>：${r.warning}</div>`}
+  if(r.attribution){
+    const a=r.attribution;
+    h+=`<h3>④ 像什么历史案子 —— 案件库检索（指纹空间 10 近邻）</h3>
+    <p>10 个最像的历史账户里 <b>${(a.black_frac*10)|0} 个是已结案欺诈</b>${a.majority?`，多数手法：<span class="pill p-red">${a.majority}</span>`:''}</p>
+    ${a.low_conf?`<p style="color:var(--gold)">⚠️ <b>归因置信度低</b>：最近邻居距离 ${a.neighbors[0].dist.toFixed(1)}，是正常账户之间典型距离（${a.d_ref.toFixed(1)}）的 3 倍以上——库里其实没有真正像它的账户，上面的手法标签仅供参考，可能是<b>库中未见过的新类型</b>。</p>`:''}
+    <table><tr><th>#</th><th>相似账户</th><th>身份</th><th>手法</th><th>距离</th></tr>
+    ${a.neighbors.map((n,i)=>`<tr><td>${i+1}</td><td>${n.uid}</td>
+      <td>${n.black?'<span class="pill p-red">案件</span>':'<span class="pill p-teal">正常</span>'}</td>
+      <td>${n.btype||'-'}</td><td>${n.dist.toFixed(2)}</td></tr>`).join('')}</table>`;}
+  h+=`<h3>⑤ 最可疑的 5 笔行为 —— 逐笔定位（惊讶度 z 最高）</h3>
+  <table><tr><th>第几笔</th><th>时间</th><th>类型</th><th>金额</th><th>渠道</th><th>结果</th><th>惊讶度 z</th></tr>
+  ${r.top_events.map(e=>`<tr${e.z>2?' style="background:var(--red-bg)"':''}>
+    <td>${e.i}</td><td>${e.t}</td><td>${e.type}</td><td>${e.amount??''}</td>
+    <td>${e.channel}</td><td>${e.result}</td><td><b>${e.z.toFixed(2)}</b></td></tr>`).join('')}</table>
+  <p class="hint">读法：每根条 = 该通道认为这个账户"比百分之几的正常人更可疑"（越接近 100 越危险，绿≈正常、黄=偏高、红=报警级）；
+  融合可疑度 = 三通道的平均，超过报警线（白样本第 99 百分位）才报警。
+  哪个通道最红提示欺诈形态：MEM 红=时序结构反常，iForest 红=行为配比反常，近邻红=整体找不到同类。
+  "最可疑 5 笔"任何账户都有——那只是他自己序列里相对最反常的 5 笔，放行账户的这 5 笔属于正常波动。</p>
+  </div>`;
+  $('result').innerHTML=h;
+}
+init();
+</script></div></body></html>
