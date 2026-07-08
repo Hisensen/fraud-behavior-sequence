@@ -1,0 +1,424 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>实验矩阵 · 15 种建模思想的实证判决</title>
+<style>
+:root{
+  --bg:#faf9f6; --card:#ffffff; --ink:#1e2528; --sub:#5b6b70; --line:#e3ded4;
+  --teal:#00997C; --teal-bg:#e6f5f1; --red:#C24A32; --red-bg:#faece8;
+  --gold:#9a7b2d; --gold-bg:#f7f1df; --blue:#2d5f9a; --blue-bg:#e8eff8;
+  --code:#f0ede6;
+}
+@media (prefers-color-scheme: dark){
+  :root{--bg:#14181a; --card:#1d2326; --ink:#e8e6e0; --sub:#9aa8ad; --line:#323b40;
+    --teal:#2fbf9e; --teal-bg:#12312a; --red:#e0745c; --red-bg:#3a201a;
+    --gold:#cfa84e; --gold-bg:#332b16; --blue:#6fa3d8; --blue-bg:#1a2836;
+    --code:#262d31;}
+}
+:root[data-theme="light"]{
+  --bg:#faf9f6; --card:#ffffff; --ink:#1e2528; --sub:#5b6b70; --line:#e3ded4;
+  --teal:#00997C; --teal-bg:#e6f5f1; --red:#C24A32; --red-bg:#faece8;
+  --gold:#9a7b2d; --gold-bg:#f7f1df; --blue:#2d5f9a; --blue-bg:#e8eff8;
+  --code:#f0ede6;
+}
+:root[data-theme="dark"]{
+  --bg:#14181a; --card:#1d2326; --ink:#e8e6e0; --sub:#9aa8ad; --line:#323b40;
+  --teal:#2fbf9e; --teal-bg:#12312a; --red:#e0745c; --red-bg:#3a201a;
+  --gold:#cfa84e; --gold-bg:#332b16; --blue:#6fa3d8; --blue-bg:#1a2836;
+  --code:#262d31;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:16px/1.85 -apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;}
+.wrap{max-width:1080px;margin:0 auto;padding:32px 20px 90px}
+h1,h2,h3{font-family:"Songti SC","STSong",serif;line-height:1.4}
+h1{font-size:33px;margin:8px 0 4px}
+h2{font-size:25px;margin:54px 0 6px;border-bottom:2px solid var(--teal);padding-bottom:8px}
+h2 .no{color:var(--teal);margin-right:10px}
+h3{font-size:19px;margin:26px 0 6px}
+p{margin:10px 0}
+.kicker{color:var(--teal);font-weight:700;letter-spacing:.18em;font-size:13px}
+.sub{color:var(--sub);font-size:14.5px}
+.tag{display:inline-block;font-size:12.5px;padding:2px 12px;border-radius:99px;
+  margin-right:6px;font-weight:700;white-space:nowrap;vertical-align:middle}
+.t-teal{background:var(--teal-bg);color:var(--teal)}
+.t-red{background:var(--red-bg);color:var(--red)}
+.t-gold{background:var(--gold-bg);color:var(--gold)}
+.t-blue{background:var(--blue-bg);color:var(--blue)}
+b.teal{color:var(--teal)} b.red{color:var(--red)}
+.twrap{overflow-x:auto;margin:14px 0}
+table{border-collapse:collapse;font-size:13.5px;min-width:620px;width:100%}
+th,td{border:1px solid var(--line);padding:7px 11px;text-align:left;vertical-align:top}
+th{background:var(--code);font-weight:700;white-space:nowrap}
+td.num{font-family:ui-monospace,Menlo,monospace;white-space:nowrap}
+.mono{font-family:ui-monospace,Menlo,monospace;font-size:13px;background:var(--code);
+  padding:1px 6px;border-radius:5px}
+.flow{background:var(--code);border-radius:12px;padding:14px 18px;
+  font-family:ui-monospace,Menlo,monospace;font-size:13.5px;line-height:2;
+  overflow-x:auto;white-space:pre}
+.qa{border-left:4px solid var(--red);background:var(--red-bg);
+  border-radius:0 12px 12px 0;padding:12px 18px;margin:16px 0}
+.ok{border-left:4px solid var(--teal);background:var(--teal-bg);
+  border-radius:0 12px 12px 0;padding:12px 18px;margin:16px 0}
+.note{border-left:4px solid var(--gold);background:var(--gold-bg);
+  border-radius:0 12px 12px 0;padding:12px 18px;margin:16px 0;font-size:14.5px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;
+  padding:22px 26px;margin:22px 0}
+.card h3{margin-top:2px}
+.lbl{font-weight:700;color:var(--teal);font-size:14px;display:block;margin:14px 0 2px}
+ul,ol{padding-left:24px;margin:8px 0}
+li{margin:5px 0}
+nav{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--line);
+  padding:10px 0;margin:0 -20px 10px;z-index:9;overflow-x:auto;white-space:nowrap}
+nav a{color:var(--sub);text-decoration:none;font-size:13.5px;padding:5px 11px;
+  border-radius:99px;margin:0 1px}
+nav a:hover{background:var(--teal-bg);color:var(--teal)}
+.big{font-size:20px;font-weight:800}
+.vs{color:var(--sub);font-size:13px}
+footer{margin-top:70px;color:var(--sub);font-size:13px;border-top:1px solid var(--line);padding-top:16px}
+</style>
+
+<div class="wrap">
+<div class="kicker">反欺诈 · 行为序列 · 实验矩阵</div>
+<h1>15 种建模思想的实证判决</h1>
+<p class="sub">2026-07-08 · 每种思想一个最小实验 + 至少 2 个 baseline · 比的是思想不是模型 · 全部可复现
+（<span class="mono">blueprint_prep.py</span> + <span class="mono">exp*.py</span>）</p>
+
+<nav>
+<a href="#setup">实验设置</a><a href="#board">总判决表</a><a href="#det">检测类①②⑤⑥⑪⑫</a>
+<a href="#rep">表征类③④⑦⑧</a><a href="#sys">系统类⑨⑭</a><a href="#defer">暂缓⑩⑬⑮</a>
+<a href="#find">五大发现</a><a href="#road">落地修订</a>
+</nav>
+
+<!-- ============ 设置 ============ -->
+<h2 id="setup"><span class="no">0</span>实验怎么设的（先读这个，数字才有意义）</h2>
+<div class="card">
+<p><b>数据</b>：<span class="mono">data_cluster.jsonl</span> —— 专门造的"双真值"基准：
+4 种白人群原型各 500 人（工薪族 / 学生党 / 个体商户 / 理财大户），
+4 种黑手法各 60 人（盗号爆发 / 慢速抽干 / 养卡套现 / 赌博出款），每人一个月行为序列。
+<b>每个账户既有"他是谁"的真值，又有"他用什么手法"的真值</b>——这样聚类的对错才可以打分。</p>
+<p><b>统一协议</b>：所有方法只用 1600 个白样本"训练"（无监督），黑样本从未参与任何训练。三个统一指标：</p>
+<ul>
+<li><b>检测 AUC</b>：测试集 400 白 + 240 黑上的排序能力（1.0 完美，0.5 抛硬币）；</li>
+<li><b>白 ARI</b>：2000 个白样本聚 4 簇，与人群真值的吻合度（1.0 完美，0 随机）；</li>
+<li><b>黑 ARI</b>：240 个黑样本聚 4 簇，与手法真值的吻合度。</li>
+</ul>
+<div class="note"><b>一个必须先说的口径警告</b>：这份数据的四种手法会明显改变聚合统计
+（凌晨占比、间隔分布、金额倍数分布），造数时只做了部分词频对齐。所以本基准对"统计类方法"偏友好；
+而之前 temporal 基准是严格词频对齐的，那边统计方法失效、MEM 拿 0.959。
+<b>两组实验要合着读</b>（见"五大发现"第 1 条），单看一边都会得出错误结论。</div>
+</div>
+
+<!-- ============ 总表 ============ -->
+<h2 id="board"><span class="no">1</span>总判决表</h2>
+<div class="twrap"><table>
+<tr><th>#</th><th>思想</th><th>检测 AUC</th><th>白 ARI</th><th>黑 ARI</th><th>判决</th></tr>
+<tr><td>9</td><td><b>检索记忆</b> Retrieval</td><td class="num"><b>0.984</b>(120案件库) / 0.979(零训练)</td><td class="num">-</td><td class="num">手法命中 <b>92.5%</b></td><td>✅✅ 性价比之王</td></tr>
+<tr><td>1</td><td><b>分布学习</b> Distribution</td><td class="num">0.92(嵌入) / 0.99(统计+iForest)</td><td class="num">-</td><td class="num">-</td><td>✅ 多模态实锤</td></tr>
+<tr><td>2</td><td><b>原型学习</b> Prototype</td><td class="num">K=1: 0.52 → K=16: <b>0.92</b></td><td class="num">0.973</td><td class="num">-</td><td>✅ 单中心出局</td></tr>
+<tr><td>4</td><td><b>对比学习</b> Contrastive</td><td class="num">0.914(kNN)</td><td class="num"><b>0.980</b> 全场最高</td><td class="num">0.34~0.52</td><td>✅ P1 升级备胎</td></tr>
+<tr><td>3</td><td><b>序列嵌入</b> Embedding</td><td class="num">-</td><td class="num">0.978</td><td class="num"><b>≈0</b></td><td>✅ 认人不认手法</td></tr>
+<tr><td>7</td><td><b>异常指纹</b> Fingerprint</td><td class="num">-</td><td class="num">0.27(交叉退化)</td><td class="num"><b>0.587</b></td><td>✅ 手法归因成立</td></tr>
+<tr><td>11</td><td><b>世界模型</b> MEM</td><td class="num">top5: 0.78 / <b>mean: 0.88</b></td><td class="num">-</td><td class="num">-</td><td>✅ 池化定律三证</td></tr>
+<tr><td>14</td><td><b>多视图融合</b> Fusion</td><td class="num">全视角 <b>0.986</b>(单 MEM 0.78)</td><td class="num">-</td><td class="num">-</td><td>✅ 增益真实</td></tr>
+<tr><td>12</td><td><b>行为DNA</b> VAE</td><td class="num">0.988(重构误差)</td><td class="num">0.71</td><td class="num">0.47</td><td>⚠️ 检测强/因子假说不成立</td></tr>
+<tr><td>5</td><td><b>行为语法</b> Grammar</td><td class="num">一元0.72 / 二元0.66 / MEM 0.78</td><td class="num">-</td><td class="num">-</td><td>⚠️ 顺序价值依赖数据形状</td></tr>
+<tr><td>6</td><td><b>行为片段</b> Motif</td><td class="num">0.80(罕见度)</td><td class="num">0.84</td><td class="num">0.33</td><td>⚠️ 不如更简单的方法</td></tr>
+<tr><td>8</td><td><b>轨迹建模</b> DTW</td><td class="num">0.58</td><td class="num">0.00</td><td class="num">0.29</td><td>❌ 全面垫底，放弃</td></tr>
+<tr><td>10</td><td>关系图 Graph</td><td colspan="3" class="sub">数据无对手方/设备字段；既定"先序列后图"</td><td>⏸ 暂缓</td></tr>
+<tr><td>13</td><td>因果 Causal</td><td colspan="3" class="sub">无干预数据，只能做玩具 SCM</td><td>⏸ 暂缓</td></tr>
+<tr><td>15</td><td>基础模型 Foundation</td><td colspan="3" class="sub">此前 finetune 实验已证跨数据预训练迁移为负收益</td><td>⏸ 暂缓</td></tr>
+</table></div>
+
+<!-- ============ 检测类 ============ -->
+<h2 id="det"><span class="no">2</span>检测类思想：谁能把黑样本排到前面</h2>
+
+<div class="card">
+<h3>思想① 分布学习 <span class="tag t-teal">✅ 成立</span></h3>
+<span class="lbl">假设</span>
+正常行为在某个空间里形成高密度区域，异常落在低密度区。"你出现在没人去过的地方，就可疑。"
+<span class="lbl">怎么验证</span>
+把每个用户变成向量（MEM 行为嵌入 64 维 / 手工统计特征 40 维），在训练白样本上拟合密度模型，
+测试样本的"负对数密度"当风险分。同时用 BIC 信息准则回答科学问题：正常分布是一个峰还是多个峰？
+<span class="lbl">结果</span>
+<div class="twrap"><table>
+<tr><th>方法</th><th>空间</th><th>检测 AUC</th></tr>
+<tr><td>单高斯 Mahalanobis 距离</td><td>嵌入</td><td class="num">0.9198</td></tr>
+<tr><td>GMM（BIC 自动选 12 峰）对数密度</td><td>嵌入</td><td class="num">0.9010</td></tr>
+<tr><td>iForest</td><td>统计特征</td><td class="num"><b>0.9871</b></td></tr>
+<tr><td>OCSVM</td><td>统计特征</td><td class="num">0.9859</td></tr>
+</table></div>
+<span class="lbl">解读</span>
+两个结论：(a) <b>正常分布是多模态的</b>——BIC 在 K=12 处远好于 K=1（-41171 vs 291543），
+"正常"不是一团，是很多岛，这从分布视角证实了人群结构真实存在；
+(b) 密度确实能当风险分，而且在<b>统计特征空间</b>里比在嵌入空间里更好用（见五大发现第 1 条的口径警告）。
+<span class="lbl">系统角色</span>
+统计特征 + iForest 作为评分主链的<b>第二通道</b>（与 MEM 惊讶度秩融合），零深度学习依赖、可解释、当天能上线。
+</div>
+
+<div class="card">
+<h3>思想② 原型学习 <span class="tag t-teal">✅ 成立</span> <span class="tag t-red">单中心彻底失败</span></h3>
+<span class="lbl">假设</span>
+不建密度模型，只学 K 个"正常原型"（典型用户画像的中心点），到最近原型的距离 = 风险分。
+K=1 时它就等价于 DeepSVDD 那类"把正常压到一个球心"的经典方法。
+<span class="lbl">怎么验证</span>
+在训练白嵌入上跑 KMeans 得 K 个原型，扫 K = 1 / 2 / 4 / 8 / 16 / 32。
+<span class="lbl">结果</span>
+<div class="twrap"><table>
+<tr><th>K</th><td class="num">1</td><td class="num">2</td><td class="num">4</td><td class="num">8</td><td class="num">16</td><td class="num">32</td></tr>
+<tr><th>检测 AUC</th><td class="num"><b class="red">0.518</b></td><td class="num">0.593</td><td class="num">0.888</td><td class="num">0.885</td><td class="num"><b class="teal">0.916</b></td><td class="num">0.897</td></tr>
+</table></div>
+<span class="lbl">解读</span>
+K=1 的 AUC 是 0.518——<b>和抛硬币一样</b>。因为四个人群各占一岛，强行找一个"全体正常的中心"
+会落在岛与岛之间的空地上，理财大户到中心的距离比骗子还远。K≥4（覆盖住人群数）后跳到 0.89+。
+这是"分群建模"必要性最直接的证据：<b>任何把正常当单一球体的方法（含全局统一阈值）在多人群数据上都会失效</b>。
+<span class="lbl">系统角色</span>
+不单独上线，但它的教训直接进架构：P1 人群层先分群、每群独立建模/校阈值。
+</div>
+
+<div class="card">
+<h3>思想⑤ 行为语法 <span class="tag t-gold">⚠️ 价值依赖数据形状</span></h3>
+<span class="lbl">假设</span>
+正常行为有"语法"（先登录再转账、改密码前先验证），违反语法即异常。
+阶梯设计：一元模型（只看词频，无语法）→ 二元马尔可夫（相邻顺序）→ MEM（长程条件语法）。
+<span class="lbl">怎么验证</span>
+训练白样本上估计各阶语言模型，测试序列的负对数似然（NLL）当风险分；
+再做<b>顺序破坏检验</b>：把测试序列随机打乱，看语法分涨多少——涨得多说明顺序信息真实存在。
+<span class="lbl">结果</span>
+一元 0.720 / 二元 0.665 / MEM 0.780。打乱后二元 NLL 只涨了 白+0.001 / 黑+0.021 —— <b>本数据顺序信息弱</b>。
+<span class="lbl">解读</span>
+诚实结论：这份数据的手法差异主要体现在"配比和时机"而不是"排列顺序"，所以语法方法吃不到肉。
+但<b>不能推广为"顺序没用"</b>——之前严格词频对齐的 temporal 基准上（黑白配比完全相同、只差时序结构），
+词频类方法全灭而 MEM 拿 0.959。顺序信息的价值取决于欺诈把痕迹留在哪一层。
+<span class="lbl">系统角色</span>
+二元语法不上线；MEM 保留（它同时覆盖顺序+时机+金额条件结构，语法只是它的子集）。
+</div>
+
+<div class="card">
+<h3>思想⑥ 行为片段 Motif <span class="tag t-gold">⚠️ 不如更简单的方法</span></h3>
+<span class="lbl">假设</span>
+挖出高频行为片段（如"登录!转出"= 5 分钟内连发），用户 = 片段组合；罕见片段多 = 可疑。
+<span class="lbl">怎么验证</span>
+训练白样本挖 2/3-gram 片段词表（带"快速连接"标记），罕见度 = 用户片段在白语料的负对数频率均值；
+片段计数向量做聚类，与单事件词频 baseline 对比。
+<span class="lbl">结果</span>
+罕见度检测 0.799；聚类 白 0.845 / 黑 0.335，而<b>更简单的词频向量是 白 0.824 / 黑 0.472</b>——黑手法上反被 baseline 压过。
+<span class="lbl">解读</span>
+Motif 的信息基本被"词频 + 间隔分布"覆盖，额外的组合爆炸（1310 种模式）只带来噪声。
+经典的奥卡姆剃刀案例：<b>表达力更强 ≠ 效果更好</b>。
+<span class="lbl">系统角色</span>
+不进系统。但"快速连接对"（转入!转出）这一个特征本身有价值，已被统计特征的间隔分布覆盖。
+</div>
+
+<div class="card">
+<h3>思想⑪ 世界模型（MEM 本尊）<span class="tag t-teal">✅ 成立</span> <span class="tag t-blue">池化定律第三次验证</span></h3>
+<span class="lbl">假设</span>
+模型学"正常用户下一步会做什么"，预测失败（惊讶）= 异常。这就是我们整个项目的主方法。
+<span class="lbl">本轮新证据</span>
+本数据上 top-5 池化 0.780、<b>mean 池化 0.877</b>——因为这批手法（慢速抽干/养卡/赌博）都是<b>贯穿全月的整段型异常</b>，
+不是盗号那种局部爆发。这与既有池化定律完全一致：局部异常用 top-k，整段异常用 mean。
+第一次在 rich/温和数据发现，第二次在 Ethereum 资金流验证，这是第三次。
+<span class="lbl">既有战绩（合并读）</span>
+temporal（词频对齐）0.959 / rich 0.984 / Ethereum 真实数据 0.928（oracle 0.934）/ Sparkov 0.886（超 oracle）。
+<span class="lbl">系统角色</span>
+评分主链不变；新增：报警时同时输出 mean 分与 top-k 分（多头已有，零成本），哪个触发说明手法形态。
+</div>
+
+<div class="card">
+<h3>思想⑫ 行为 DNA（VAE 潜因子）<span class="tag t-gold">⚠️ 检测强 / 因子假说不成立</span></h3>
+<span class="lbl">假设</span>
+每个用户由少数"潜在行为因子"组成（像 DNA），VAE 学出因子；重构误差 = 异常分，因子 = 可解释画像。
+<span class="lbl">怎么验证</span>
+统计特征 → 8 维潜变量 VAE；对照 PCA-8 重构误差、原始统计特征直接聚类；
+再检验每个因子和哪个真实统计量相关（可解释性）。
+<span class="lbl">结果</span>
+重构误差检测 <b>0.988（全场单视角最高）</b>，但 PCA 也有 0.973（深度只多 1.5 个点）；
+潜变量聚类 白 0.71 / 黑 0.47，<b>反而不如原始统计特征直接聚（白 0.89 / 黑 0.91）</b>；
+8 个因子有 5 个都糊在"个人金额桶"上（|r| 0.56~0.98），根本不是独立的"行为基因"。
+<span class="lbl">解读</span>
+"压缩重构"作为检测通道成立（本质和思想①同族：重构不出来 = 低密度区）；
+但"能学出可解释的行为因子"这个浪漫假设被否了——压缩会把信息搅在一起，还不如不压。
+<span class="lbl">系统角色</span>
+保留重构误差作为融合通道候选之一（与 iForest 二选一即可，信息高度重叠）；因子解释路线关闭。
+</div>
+
+<!-- ============ 表征类 ============ -->
+<h2 id="rep"><span class="no">3</span>表征聚类类思想：谁能聚出"人群"和"手法"</h2>
+
+<div class="card">
+<h3>思想③ 序列嵌入 <span class="tag t-teal">✅ 认人</span> <span class="tag t-red">不认手法</span></h3>
+<span class="lbl">假设</span>
+Transformer 隐层的 mean-pool 向量是"行为指纹"，相似的人自然靠近。
+<span class="lbl">怎么验证</span>
+现成 MEM（只为预测训练，从没见过任何标签）的隐层嵌入直接 KMeans，双向测试：聚人群 + 聚手法。
+<span class="lbl">结果</span>
+聚人群 <b>ARI 0.978</b>（轮廓系数还<b>自动</b>选出 k=4；混淆矩阵：商户 500/500、理财 500/500、工薪 499/500）；
+聚手法 <b>ARI −0.001（完全随机）</b>——但同一批聚类结果对黑样本的"底座人群"ARI = 0.805。
+<span class="lbl">解读</span>
+全矩阵最戏剧性的一行：嵌入看一个骗子，看到的是<b>"他伪装成的那种人"</b>，完全看不到"他在作什么案"。
+危险不是行为空间里的一个区域，而是"相对正常轨道的偏移"——所以永远不要指望一个行为嵌入把黑样本聚成手法。
+<span class="lbl">系统角色</span>
+P1 人群层的免费主力（模型已有，零额外训练）。
+</div>
+
+<div class="card">
+<h3>思想④ 对比学习（CoLES-lite）<span class="tag t-teal">✅ 人群表征全场最高</span></h3>
+<span class="lbl">假设</span>
+专门为"表征好"而训练：同一用户的两个随机时间片段应该相似（正对），不同用户远离（负对）。
+Sberbank 在交易流水上的工业标杆做法。
+<span class="lbl">怎么验证</span>
+复用 MEM 骨架、换 InfoNCE 目标训练 15 轮；消融片段长度策略（随机 20-40 vs 固定 30）。
+<span class="lbl">结果</span>
+聚人群 <b>ARI 0.980 / 0.982（两种消融，全场最高）</b>，检测（5 近白距离）0.914；
+聚手法 0.34 / 0.52——比 MEM 嵌入的 ≈0 多了一点手法感知，但两次消融差 0.18，不稳定。
+<span class="lbl">解读</span>
+成立但增益有限：比免费的 MEM 嵌入（0.978）只高零点几个点。
+它的理论优势（表征是目标而非副产品）在更大数据、更多下游任务时才会拉开。
+<span class="lbl">系统角色</span>
+P1 的<b>升级备胎</b>：真实数据上如果 MEM 嵌入聚类质量不够，再启用（原方案全景 S5 路线不变）。
+</div>
+
+<div class="card">
+<h3>思想⑦ 异常指纹（惊讶画像）<span class="tag t-teal">✅ 手法归因成立</span></h3>
+<span class="lbl">假设</span>
+聚"异常本身"而不是聚"用户"：把 MEM 各预测头的惊讶度统计 + 高惊讶位置的类型/节奏分布拼成向量，
+同手法的账户应有相同"指纹"。
+<span class="lbl">怎么验证</span>
+240 黑样本的指纹向量 KMeans 聚 4 簇 vs 手法真值；交叉配对（拿指纹聚白人群）应退化。
+<span class="lbl">结果</span>
+聚手法 <b>ARI 0.587</b>：盗号爆发 60/60 完美隔离、慢速抽干 47/60、养卡 55/60，
+混淆集中在赌博↔养卡（两者指纹都是"短间隔+转入转出对"）；交叉聚人群退化到 0.27（符合预期）。
+配合思想⑨：指纹空间 kNN 检索的手法命中率 <b>92.5%</b>（嵌入空间只有 69.2%）。
+<span class="lbl">解读</span>
+与思想③合成一条<b>双表征定律</b>：嵌入空间住着"人群"，偏移空间住着"手法"，互不越界。
+0.587 还有明确提升点：指纹里加"高惊讶位置的时刻分布"（赌博全在凌晨）可拆开赌博↔养卡混淆。
+<span class="lbl">系统角色</span>
+P2 手法层主力：报警池 → 指纹 → HDBSCAN 聚簇路由 / 案件库检索归因。
+</div>
+
+<div class="card">
+<h3>思想⑧ 轨迹建模（DTW）<span class="tag t-red">❌ 不成立，放弃</span></h3>
+<span class="lbl">假设</span>
+把一个月看成 30 天的"日活动量曲线"，用 DTW 弹性对齐比较两人轨迹像不像。
+<span class="lbl">怎么验证</span>
+日事件量序列（z 标准化）+ 带窗 DTW，层次聚类 vs 真值；欧氏距离做对齐消融；最近白轨迹距离做检测。
+<span class="lbl">结果</span>
+聚人群 ARI <b>0.002</b>（人群差异在"一天内的时刻"和"事件配比"，日总量曲线里根本没有这信息）；
+聚手法 0.287（略有信号：爆发/持续的日量形态不同）；检测 0.585；DTW 比欧氏的优势只在手法侧存在。
+<span class="lbl">解读</span>
+输在表征粒度：把丰富的事件流压成 30 个数字，信息全丢了。教科书式的"表征选错，算法再好也没用"。
+<span class="lbl">系统角色</span>
+放弃。它想抓的"日节律"信息由统计特征里的时刻分布（凌晨占比、sin/cos）更便宜地覆盖。
+</div>
+
+<!-- ============ 系统类 ============ -->
+<h2 id="sys"><span class="no">4</span>系统类思想：不训练模型也能赢</h2>
+
+<div class="card">
+<h3>思想⑨ 检索记忆 <span class="tag t-teal">✅✅ 性价比之王</span></h3>
+<span class="lbl">假设</span>
+不做分类器：新账户来了，去历史库里查"最像谁"。像审核老手的直觉——"这单和三月那批养卡案一模一样"。
+<span class="lbl">怎么验证</span>
+两档：(a) <b>零标签版</b>：到第 5 近训练白样本的距离 = 风险分（越孤立越可疑），三个空间对比；
+(b) <b>案件库版</b>：随机 120 个黑样本假装"已结案入库"，其余账户查 top-10 邻居，
+邻居里黑的占比 = 风险分，邻居多数手法 = 归因。
+<span class="lbl">结果</span>
+<div class="twrap"><table>
+<tr><th>档位</th><th>空间</th><th>指标</th><th>数值</th></tr>
+<tr><td rowspan="3">零标签（第5近白距离）</td><td>统计特征</td><td>检测 AUC</td><td class="num"><b>0.979</b></td></tr>
+<tr><td>指纹</td><td>检测 AUC</td><td class="num">0.939</td></tr>
+<tr><td>嵌入</td><td>检测 AUC</td><td class="num">0.902</td></tr>
+<tr><td rowspan="3">120 案件库</td><td>指纹</td><td>邻居黑占比 AUC / Recall@10 / 手法命中</td><td class="num"><b>0.984</b> / 95.0% / <b>92.5%</b></td></tr>
+<tr><td>嵌入</td><td>Recall@10 / 手法命中</td><td class="num">92.5% / 69.2%</td></tr>
+<tr><td colspan="2" class="sub">案件库版所需标注量：仅 120 条结案记录</td><td class="num">-</td></tr>
+</table></div>
+<span class="lbl">解读</span>
+全矩阵性价比最高的思想：<b>零训练、零深度学习、当天可上线</b>，零标签版就有 0.98；
+攒 100+ 结案案件后，检索同时给出"多可疑"（邻居黑占比）和"像哪种案"（邻居多数手法），
+且每个判断自带证据（"因为它最像这 10 个历史案件"），审核员天然信任。
+指纹空间手法命中 92.5% vs 嵌入空间 69.2%，再次锤实双表征定律。
+<span class="lbl">系统角色</span>
+从原方案的"远期 C4"<b>提前到第一批落地</b>：零标签版进评分融合，案件库版做审核分流。
+</div>
+
+<div class="card">
+<h3>思想⑭ 多视图融合 <span class="tag t-teal">✅ 增益真实</span></h3>
+<span class="lbl">假设</span>
+不同思想看到不同层面的异常，秩融合（按排名平均）应稳定优于任何单视角。
+<span class="lbl">怎么验证</span>
+9 个视角的分数两两与 MEM 秩融合 + 全视角平均。
+<span class="lbl">结果</span>
+MEM 单打 0.780 → MEM+对比kNN 0.939（+0.16）→ <b>全视角融合 0.986</b>。
+唯一的负贡献是 DTW 轨迹（−0.02，垃圾视角拖后腿）。
+<span class="lbl">解读</span>
+融合有效且便宜（秩平均，无需训练）；但要<b>先淘汰弱视角</b>——融合不是越多越好，是越互补越好。
+实际收敛到三个互补通道就够：MEM 惊讶度（条件结构）+ 统计异常（聚合分布）+ 检索距离（记忆）。
+<span class="lbl">系统角色</span>
+评分主链的融合层，替代原先"MEM 单通道 + 对手方特征融合"的窄版本。
+</div>
+
+<!-- ============ 暂缓 ============ -->
+<h2 id="defer"><span class="no">5</span>暂缓的三个（不是否定，是排期）</h2>
+<div class="card">
+<p><b>⑩ 关系图</b>：本数据没有对手方/设备字段，而且这是既定路线（先序列后图，图是团伙欺诈的解药，
+在 FINAL_SOLUTION 的 L5）。Ethereum 实验中"对手方新颖度"特征融合 +4pp 已经是它的前菜。</p>
+<p><b>⑬ 因果</b>：没有干预数据（我们不能真的给用户"施加"一次盗号看后果），
+只能做玩具结构方程，跑了也证明不了什么。等有 A/B 或规则上线回流数据再说。</p>
+<p><b>⑮ 基础模型</b>：跨数据集预训练→微调，此前 finetune_fair 实验已经给过负结果
+（预训练 MEM 微调反而不如目标数据从头训练）。行为数据的"通用预训练"在字段/语义不对齐时是负迁移，
+等多家机构同 Schema 数据出现才有意义。</p>
+</div>
+
+<!-- ============ 发现 ============ -->
+<h2 id="find"><span class="no">6</span>五大发现（比单个实验更值钱）</h2>
+
+<div class="ok"><b>发现 1 · 信号分层定律：信号在哪一层，哪一层的方法就赢。</b><br>
+本基准（手法大幅改变聚合统计）：iForest 0.987 &gt; MEM 0.78；
+temporal 基准（词频严格对齐）：统计方法全灭，MEM 0.959。
+这不是矛盾，是同一条定律的两面。生产结论：<b>聚合统计通道和条件结构通道都要有，融合兜底</b>——
+因为你永远不知道真实欺诈把痕迹留在哪一层。</div>
+
+<div class="ok"><b>发现 2 · 正常是群岛不是大陆。</b><br>
+BIC 选 12 峰、单中心原型 AUC 0.52（≈抛硬币）、K≥4 后 0.89+。
+一切"把正常压成一个中心/一个阈值"的方法在多人群数据上系统性失效。分群建模不是优化，是刚需。</div>
+
+<div class="ok"><b>发现 3 · 双表征定律（人群住嵌入空间，手法住偏移空间）。</b><br>
+嵌入聚人群 0.978、聚手法 −0.001；指纹聚手法 0.587、聚人群退化 0.27；
+检索手法命中：指纹空间 92.5% vs 嵌入空间 69.2%。三组独立证据同一个结论：
+<b>不存在"一个 embedding 通吃"，P1 和 P2 必须用不同的表征</b>。</div>
+
+<div class="ok"><b>发现 4 · 记忆可能比模型重要。</b><br>
+零训练的检索 0.979；120 个案件 0.984 + 手法归因 92.5%。
+一个持续积累的案件向量库，价值可能超过任何单个模型的迭代。</div>
+
+<div class="ok"><b>发现 5 · 简单的赢了浪漫的。</b><br>
+Motif 挖掘输给词频、VAE 潜因子输给原始特征、DTW 输给一切、深度重构只比 PCA 高 1.5 个点。
+复杂方法要留，必须先赢过它对应的"最笨 baseline"——这轮矩阵里一半没赢。</div>
+
+<!-- ============ 修订 ============ -->
+<h2 id="road"><span class="no">7</span>落地修订：实验矩阵之后的系统形态</h2>
+<div class="flow">                    ┌── P1 人群层 ──────────────────────────────┐
+全量用户 ──▶ MEM嵌入 聚人群(ARI 0.98, k自动) ──▶ 每群独立训练/校阈值
+                    └──────────────────────────────────────┘
+                                   │
+              ┌─── 评分层(三通道秩融合, 0.986) ────────────────┐
+              │  ① MEM 惊讶度(mean+topk 双报)   ← 条件结构信号  │
+              │  ② 统计特征 iForest / kNN距离    ← 聚合分布信号  │
+              │  ③ 检索: 第k近白距离(零标签起步)  ← 记忆信号      │
+              └──────────────────────────────────────────┘
+                                   │
+                    ┌── P2 手法层(超阈值报警) ────────────────┐
+                    │ 无案件期: 指纹 HDBSCAN 聚簇 → 人工命名     │
+                    │ 案件积累后: 指纹空间 kNN 检索(命中92.5%)   │
+                    │            + 噪声点 = 新手法预警          │
+                    └────────────────────────────────────┘</div>
+<p><b>放弃清单</b>：DTW 轨迹、Motif 聚类、VAE 因子解释、二元语法、单中心方法。<br>
+<b>待办验证</b>：造一版严格词频对齐的 data_cluster，验证统计通道会如预期让位给 MEM（钉死发现 1）；
+指纹加"高惊讶位置时刻分布"拆赌博↔养卡混淆。</p>
+
+<footer>反欺诈 · 实验矩阵详解 · 2026-07-08 ·
+数据 data_cluster.jsonl（双真值仿真）· 复现: blueprint_prep.py → exp1/2/4/5/6/8/9/12/14 ·
+文字版 BLUEPRINT_MATRIX.md · 姊妹页: 行为序列聚类方案全景（桌面）</footer>
+</div>
+<script>
+new MutationObserver(()=>{}).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+</script>

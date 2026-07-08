@@ -28,7 +28,8 @@ Masked Event Model / 自回归模型学"正常行为语法"，用逐位置预测
 4. `ENCODING_REPORT.md` — 编码消融：统一 Schema + 个人金额基线（最大单项增益）
 5. `ARCH_REPORT.md` — 架构探索：AR+时间偏置；按数据形状的三档定稿配置
 6. `IMPROVEMENT_REPORT.md` — 提升轮：字段遮罩迁移 / 自清洗(负结果) / 对手方特征与分数融合
-7. **`FINAL_SOLUTION.md` — 定稿方案：五层系统架构 + 分阶段落地路线（读这篇就够）**
+7. `FINAL_SOLUTION.md` — 五层系统架构 + 分阶段落地路线
+8. **`BLUEPRINT_MATRIX.md` — 实验矩阵：15 种建模思想逐一实证判决 + 三大定律（信号分层/双表征/池化）（最新，读这篇）**
 
 ## 展示页面
 
@@ -42,6 +43,22 @@ Masked Event Model / 自回归模型学"正常行为语法"，用逐位置预测
 - `seq-showcase.html` — 6数据集行为序列实样（每集一黑一白完整序列，原始×编码逐行对照）
 - `pipeline-walkthrough.html` — 处理流程逐步拆解（每步实算演示）
 - `results-explained.html` — 结果解读：交互阈值滑块 + AUC 直观化 + oracle 对比
+- **`effective-methods.html` — 7 个验证有效方法小白详解（每步手算例子+坑）**
+- `blueprint-matrix.html` — 实验矩阵详解（15 思想的假设/验证/数字/判决）
+- `cluster-data-view.html` — 聚类基准数据设计检视（8 子类实样，攻击行标红）
+
+## 一体化系统（fraud_system/，自包含）
+
+7 个有效方法拼成的完整流水线，两条命令复现：
+
+```bash
+cd fraud_system && python run_system.py && python make_report.py  # → report.html
+```
+
+data_cluster 双真值基准（4 白人群×4 黑手法）实测：全通道秩融合 AUC **0.990**，
+误报 1% 时抓获 78%（报警 185 中 181 真黑）；人群聚类 ARI 0.970；
+报警池手法归因 ARI 0.656 / 案件库检索命中 92.5%。
+复现实验矩阵：`python blueprint_prep.py && python exp*.py`（见 BLUEPRINT_MATRIX.md）。
 
 在线（Claude Artifact）：
 

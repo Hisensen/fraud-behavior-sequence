@@ -1,0 +1,349 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>有效方法详解 · 7 个实验验证过的办法（小白版）</title>
+<style>
+:root{
+  --bg:#faf9f6; --card:#ffffff; --ink:#1e2528; --sub:#5b6b70; --line:#e3ded4;
+  --teal:#00997C; --teal-bg:#e6f5f1; --red:#C24A32; --red-bg:#faece8;
+  --gold:#9a7b2d; --gold-bg:#f7f1df; --blue:#2d5f9a; --blue-bg:#e8eff8;
+  --code:#f0ede6;
+}
+@media (prefers-color-scheme: dark){
+  :root{--bg:#14181a; --card:#1d2326; --ink:#e8e6e0; --sub:#9aa8ad; --line:#323b40;
+    --teal:#2fbf9e; --teal-bg:#12312a; --red:#e0745c; --red-bg:#3a201a;
+    --gold:#cfa84e; --gold-bg:#332b16; --blue:#6fa3d8; --blue-bg:#1a2836;
+    --code:#262d31;}
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:16px/1.9 -apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;}
+.wrap{max-width:1020px;margin:0 auto;padding:32px 20px 90px}
+h1,h2,h3,h4{font-family:"Songti SC","STSong",serif;line-height:1.4}
+h1{font-size:32px;margin:8px 0 4px}
+h2{font-size:25px;margin:60px 0 8px;border-bottom:2px solid var(--teal);padding-bottom:8px}
+h2 .no{display:inline-block;background:var(--teal);color:#fff;border-radius:8px;
+  padding:0 12px;margin-right:10px;font-size:19px}
+h3{font-size:18.5px;margin:28px 0 6px;color:var(--teal)}
+p{margin:10px 0}
+.kicker{color:var(--teal);font-weight:700;letter-spacing:.18em;font-size:13px}
+.sub{color:var(--sub);font-size:14.5px}
+.tag{display:inline-block;font-size:12.5px;padding:2px 12px;border-radius:99px;
+  margin-left:8px;font-weight:700;vertical-align:middle}
+.t-teal{background:var(--teal-bg);color:var(--teal)}
+.t-gold{background:var(--gold-bg);color:var(--gold)}
+b.teal{color:var(--teal)} b.red{color:var(--red)}
+.twrap{overflow-x:auto;margin:14px 0}
+table{border-collapse:collapse;font-size:13.5px;width:100%;min-width:520px}
+th,td{border:1px solid var(--line);padding:6px 11px;text-align:left;vertical-align:top}
+th{background:var(--code);font-weight:700;white-space:nowrap}
+td.num{font-family:ui-monospace,Menlo,monospace;white-space:nowrap}
+.mono{font-family:ui-monospace,Menlo,monospace;font-size:13.5px;background:var(--code);
+  padding:1px 6px;border-radius:5px}
+.flow{background:var(--code);border-radius:12px;padding:14px 18px;
+  font-family:ui-monospace,Menlo,monospace;font-size:13px;line-height:2;
+  overflow-x:auto;white-space:pre}
+.why{border-left:4px solid var(--blue);background:var(--blue-bg);
+  border-radius:0 12px 12px 0;padding:12px 18px;margin:14px 0;font-size:15px}
+.trap{border-left:4px solid var(--red);background:var(--red-bg);
+  border-radius:0 12px 12px 0;padding:12px 18px;margin:14px 0;font-size:15px}
+.res{border-left:4px solid var(--teal);background:var(--teal-bg);
+  border-radius:0 12px 12px 0;padding:12px 18px;margin:14px 0;font-size:15px}
+.step{background:var(--card);border:1px solid var(--line);border-radius:12px;
+  padding:14px 20px;margin:12px 0}
+.step .sn{display:inline-block;background:var(--gold-bg);color:var(--gold);
+  font-weight:800;border-radius:7px;padding:0 10px;margin-right:8px;font-size:14px}
+.ex{background:var(--code);border-radius:10px;padding:10px 16px;margin:10px 0;
+  font-size:14px}
+.ex b{color:var(--gold)}
+ul,ol{padding-left:24px;margin:8px 0}
+li{margin:5px 0}
+nav{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--line);
+  padding:10px 0;margin:0 -20px 10px;z-index:9;overflow-x:auto;white-space:nowrap}
+nav a{color:var(--sub);text-decoration:none;font-size:13.5px;padding:5px 11px;
+  border-radius:99px;margin:0 1px}
+nav a:hover{background:var(--teal-bg);color:var(--teal)}
+footer{margin-top:70px;color:var(--sub);font-size:13px;border-top:1px solid var(--line);padding-top:16px}
+</style>
+
+<div class="wrap">
+<div class="kicker">反欺诈 · 实验验证有效 · 小白友好版</div>
+<h1>7 个真正有效的办法，每一步掰开讲</h1>
+<p class="sub">2026-07-08 · 只收实验矩阵里判决为 ✅ 的方法 · 每个方法：解决什么问题 → 比喻 →
+一步一步怎么做（带手算例子）→ 实验数字 → 坑 · 无效方法（DTW/Motif/VAE因子等）不在本页，见实验矩阵页</p>
+
+<nav>
+<a href="#m0">全局图</a><a href="#m1">①MEM惊讶度</a><a href="#m2">②统计+iForest</a>
+<a href="#m3">③原型距离</a><a href="#m4">④检索记忆</a><a href="#m5">⑤嵌入聚人群</a>
+<a href="#m6">⑥指纹聚手法</a><a href="#m7">⑦秩融合</a><a href="#end">怎么拼起来</a>
+</nav>
+
+<!-- ============ 全局 ============ -->
+<h2 id="m0"><span class="no">0</span>先看全局：7 个办法各管什么</h2>
+<p>反欺诈系统要回答三个问题，7 个办法分别为它们服务：</p>
+<div class="twrap"><table>
+<tr><th>问题</th><th>办法</th><th>实验成绩</th></tr>
+<tr><td rowspan="4"><b>这个账户可疑吗？</b>（检测）</td>
+<td>① MEM 惊讶度</td><td class="num">本基准 0.88；词频对齐基准 0.96；真实以太坊 0.93</td></tr>
+<tr><td>② 统计特征 + iForest</td><td class="num">0.987</td></tr>
+<tr><td>③ 原型距离（K 个正常中心）</td><td class="num">0.916</td></tr>
+<tr><td>④ 检索记忆（查最像谁）</td><td class="num">零标签 0.979 / 120 案件 0.984</td></tr>
+<tr><td><b>正常用户分几种人？</b>（人群）</td><td>⑤ 行为嵌入 + KMeans</td><td class="num">ARI 0.978（几乎完美）</td></tr>
+<tr><td><b>骗子用的什么手法？</b>（归因）</td><td>⑥ 异常指纹聚类/检索</td><td class="num">聚类 0.587 / 检索命中 92.5%</td></tr>
+<tr><td><b>怎么合成一个分？</b></td><td>⑦ 秩融合</td><td class="num">0.78 → 0.986</td></tr>
+</table></div>
+<p class="sub">AUC 怎么读：1.0=把所有骗子排在所有好人前面；0.5=瞎猜。ARI 怎么读：1.0=聚出的组和真实分组完全一致；0=随机分组。</p>
+
+<!-- ============ 方法1 ============ -->
+<h2 id="m1"><span class="no">①</span>MEM 惊讶度 —— 学会"正常"，然后对不正常吃惊<span class="tag t-teal">检测主力</span></h2>
+
+<div class="why"><b>解决什么问题</b>：没有任何欺诈标签时，怎么给账户打"可疑分"。<br>
+<b>比喻</b>：一个在银行柜台干了二十年的老柜员，见过几万个正常客户。他说不出"欺诈的定义"，
+但一个客户的操作顺序稍有不对劲，他眉毛就会抬一下。MEM 就是把这个"眉毛"造出来：
+让模型读几千个正常客户的流水读到滚瓜烂熟，然后看新客户时，逐笔记录它"有多意外"。</div>
+
+<div class="step"><span class="sn">第 1 步</span><b>把每笔行为翻译成"数字档案"。</b>
+模型不认识"转账 500 元"这种文字，要把每个事件翻译成 8 个编号：
+事件类型、结果、渠道、是否换IP、全局金额档、<b class="teal">个人金额倍数档</b>、距上一笔的间隔档、时刻。
+<div class="ex">例：账户 A 的第 31 笔是「02:14 转出 5000 元，WEB，成功，换了IP」，A 平时单笔中位数是 400 元。<br>
+翻译 → [类型=转出] [结果=成功] [渠道=WEB] [IP=换了] [全局金额=第6档] [<b>个人倍数=12.5×→最高档</b>] [距上笔=47秒→第1档] [时刻=凌晨2点]<br>
+注意"个人倍数"这一项：5000 元对富人是零花钱，对 A 是 12.5 倍月常——这是全部编码里最值钱的一个字段（消融实验里它一项就 +3.8 个点 AUC）。</div></div>
+
+<div class="step"><span class="sn">第 2 步</span><b>只用白样本"玩填空游戏"训练模型。</b>
+把一个正常客户的序列随机遮住一些位置（或者按时间顺序遮住"下一笔"），让模型猜被遮住的是什么。
+猜错了就调整参数，重复几万次。全程<b>一个黑样本都不需要</b>——模型学的是"正常人下一步会做什么"。
+<div class="ex">例：给模型看「登录 → 查余额 → ？？？」，正常客户这里 60% 是消费、25% 是转出、几乎不会是"改密码"。
+训练完的模型会输出这样一张概率表。它内化的就是"正常行为的语法"。</div></div>
+
+<div class="step"><span class="sn">第 3 步</span><b>对新账户逐笔算"惊讶度"。</b>
+把新账户的序列给模型，每个位置都问它"你猜到这一笔吗"。用它给真实事件的概率算惊讶度 = −log(概率)。
+<div class="ex">例：模型认为下一笔是"消费"的概率 0.60 → 真的发生消费，惊讶度 = −log(0.60) = <b>0.51</b>（很平静）。<br>
+模型认为下一笔是"改密码"的概率只有 0.001 → 真的发生了改密码，惊讶度 = −log(0.001) = <b>6.9</b>（跳起来了）。<br>
+而且是四个"预测头"分别吃惊：类型头、间隔头、金额倍数头、结果头——盗号会炸"结果头"（连续失败），
+慢速抽干只炸"金额倍数头"。这个区分后面方法⑥要用。</div></div>
+
+<div class="step"><span class="sn">第 4 步</span><b>难度归一化（整个方法最大的坑就在这）。</b>
+有的位置天生难猜（隔了三天之后的第一笔，谁都猜不准），有的天生好猜（1 分钟内的连续操作）。
+直接用原始惊讶度，"难猜"会淹没"异常"——我们最早就栽在这：直接平均惊讶度的 AUC 只有 <b class="red">0.32</b>，
+比瞎猜还差（方向反了）。解法：按"间隔档"分组，每组内部把惊讶度换算成 z 分（偏离组平均几个标准差）。
+<div class="ex">例：某笔的原始惊讶度是 3.0。它属于"隔天档"，该档正常平均惊讶 2.8、标准差 0.5 → z = (3.0−2.8)/0.5 = <b>0.4</b>（正常）。<br>
+另一笔原始惊讶 3.0，但属于"1分钟内档"，该档平均 0.9、标准差 0.6 → z = (3.0−0.9)/0.6 = <b>3.5</b>（非常反常！）。<br>
+同样的 3.0，一个没事一个报警——这就是归一化的意义。做了这一步，AUC 从 0.32 → <b class="teal">0.96</b>。</div></div>
+
+<div class="step"><span class="sn">第 5 步</span><b>把逐笔分数汇总成账户分（池化）。</b>
+两种汇总方式对应两种欺诈形态：<br>
+· <b>top-k 平均</b>：只取最惊讶的 5 笔取平均 → 抓"局部爆发型"（盗号：20 分钟内一串反常，其余全月正常）；<br>
+· <b>mean 全均</b>：全部位置取平均 → 抓"整段弥漫型"（慢速抽干：每一笔都只反常一点点，但持续一个月）。
+<div class="ex">例：盗号账户 60 笔里只有 9 笔反常（z≈4），mean 会被 51 笔正常稀释成 0.7，top-5 = 4.1 一抓一个准；<br>
+慢速抽干 27 笔全都轻微反常（z≈1.5），top-5 只有 1.8 不够醒目，mean = 1.1 反而显著高于正常账户的 0.1。<br>
+实验里这条定律验证了三次：本基准（弥漫型手法为主）mean 0.88 &gt; top5 0.78。<b>实务建议：两个分都算，谁高听谁的，而且哪个高本身就提示了手法形态。</b></div></div>
+
+<div class="step"><span class="sn">第 6 步</span><b>定报警线。</b>
+不需要黑样本：把全体白样本的分数排队，取第 99 百分位当阈值 → 天然把误报率控制在 1%。
+每月用最新的正常数据重算一次（行为会随季节漂移）。</div>
+
+<div class="res"><b>实验成绩</b>：词频对齐基准 0.959（这种数据里其他方法全灭，只有它能打）；
+真实以太坊钓鱼数据 0.928（有标签的监督模型上限也才 0.934）；本基准 mean 池化 0.877。</div>
+<div class="trap"><b>坑</b>：① 忘了第 4 步归一化，分数直接反向；② 池化方式选错丢 10 个点；
+③ 训练集混入超过 15% 的欺诈样本模型会把欺诈也当"正常"学进去（10% 以内没事，实验验证过）。</div>
+
+<!-- ============ 方法2 ============ -->
+<h2 id="m2"><span class="no">②</span>统计特征 + iForest —— 40 个体检指标 + 随机砍树<span class="tag t-teal">检测副攻</span></h2>
+
+<div class="why"><b>解决什么问题</b>：同样是无标签检测，但走"聚合统计"路线——不看顺序，只看比例和分布。
+它和方法①互补：欺诈改变了行为配比时它超强（本基准 0.987），欺诈伪装了配比、只在时序结构里露馅时它失效
+（词频对齐基准上它归零），所以两个都要。<br>
+<b>比喻</b>：体检报告。不看你每天具体做了什么，只看 40 项化验指标有没有哪项离谱。</div>
+
+<div class="step"><span class="sn">第 1 步</span><b>给每个账户算一张"体检表"（约 40 个指标）。</b>
+全部是简单的比例和计数，Excel 都能算：
+<div class="ex">12 项"各类事件占比"（登录占 23%、消费占 31%、转出占 5%……）<br>
+10 项"间隔分布"（1分钟内的操作占多少、隔天的占多少……）<br>
+9 项"个人金额倍数分布"（超过自己 8 倍中位数的笔数占比……）<br>
+3 项渠道占比 + 凌晨事件占比 + 登录失败率 + 换IP率 + 事件总数(取log) 等<br><br>
+例：学生党小王 → 凌晨占比 2%、失败率 3%、超8倍金额占比 0%；<br>
+赌博出款账户 → 凌晨占比 <b class="red">61%</b>、超8倍金额占比 <b class="red">7%</b>。差异肉眼可见。</div></div>
+
+<div class="step"><span class="sn">第 2 步</span><b>标准化。</b>每个指标减去白样本平均、除以白样本标准差，
+让"占比"和"次数"这种量纲不同的指标能放在一起比。</div>
+
+<div class="step"><span class="sn">第 3 步</span><b>iForest（孤立森林）打分。</b>原理简单到惊人：
+在 40 维体检表里<b>随机</b>选一个指标、<b>随机</b>选一个切分点，把人群切成两半；对每半继续随机切；
+重复直到每个人被单独隔离出来。<b>记录每个人被隔离出来用了几刀。</b>
+<div class="ex">直觉：混在人堆里的正常人，要切很多很多刀才能把他单独隔出来（他周围全是像他的人）；<br>
+而一个"凌晨占比 61%"的异类，可能第一刀（随机切"凌晨占比 &gt; 30%？"）就把他隔出来了。<br>
+<b>刀数少 = 异常</b>。建 300 棵这样的随机树取平均刀数，就是异常分。零标签、零深度学习、训练秒级。</div></div>
+
+<div class="res"><b>实验成绩</b>：本基准 AUC 0.987（全场检测第二）。同族方法 OCSVM 0.986、VAE 重构 0.988，
+三者信息高度重叠，<b>选 iForest 一个就够</b>（最快、参数最少、可以输出"哪个指标贡献最大"给审核员看）。</div>
+<div class="trap"><b>坑</b>：它对"配比不变、只变顺序/时机"的高级欺诈是瞎子——词频对齐实验里它彻底失效。
+绝不能单独使用，必须与方法①融合（见方法⑦）。</div>
+
+<!-- ============ 方法3 ============ -->
+<h2 id="m3"><span class="no">③</span>原型距离 —— 给"正常"找 16 个代表<span class="tag t-teal">检测第三通道</span></h2>
+
+<div class="why"><b>解决什么问题</b>：还是无标签检测，走第三条路线："离所有典型正常人都远的，就可疑"。<br>
+<b>比喻</b>：把全行客户浓缩成 16 个"代表人物"（典型工薪族、典型夜市摊主、典型退休储户……）。
+新客户来了，量他和最像的那个代表差多远。谁跟 16 个代表都不像，谁可疑。</div>
+
+<div class="step"><span class="sn">第 1 步</span><b>把每个白样本变成向量</b>（用方法⑤的行为嵌入，或方法②的体检表都行）。</div>
+<div class="step"><span class="sn">第 2 步</span><b>KMeans 找 K 个中心当"代表"。</b>
+KMeans 的过程见方法⑤第 3 步，这里只是把得到的 K 个中心存下来。</div>
+<div class="step"><span class="sn">第 3 步</span><b>新账户的分数 = 它到最近代表的距离。</b>
+<div class="ex">例：新账户到 16 个代表的距离分别是 [8.2, 3.1, 9.5, <b>1.2</b>, …] → 取最小值 1.2，很正常（他就是 4 号代表那类人）。<br>
+另一个账户最小距离是 7.8 → 跟谁都不像 → 可疑。</div></div>
+
+<div class="res"><b>实验成绩 + 本方法最大的教训</b>：K=1（只找一个"全体正常的中心"）AUC = <b class="red">0.518，等于抛硬币</b>；
+K=16 → <b class="teal">0.916</b>。为什么差这么远？因为"正常"不是一团，是四个岛（四种人群）。
+只设一个中心，它会落在岛与岛之间的海面上——理财大户离这个中心比骗子还远。
+<b>这个教训比方法本身值钱：一切"全体客户一个基线/一个阈值"的做法都注定失败。</b></div>
+<div class="trap"><b>坑</b>：K 要盖过真实人群数（宁大勿小，K=16/32 都比 K=2 好）；每月要用新数据重算代表（人群会漂移）。</div>
+
+<!-- ============ 方法4 ============ -->
+<h2 id="m4"><span class="no">④</span>检索记忆 —— 不训练模型，翻旧账<span class="tag t-teal">性价比之王</span></h2>
+
+<div class="why"><b>解决什么问题</b>：检测 + 归因一次搞定，而且<b>零训练</b>、每个判断自带证据。<br>
+<b>比喻</b>：资深审核员看到新案子的第一反应从来不是跑模型，而是"这单眼熟——跟三月那批养卡案一模一样"。
+这个方法就是把"眼熟"做成系统：把所有账户变成向量存进库，新账户来了查"最像的 10 个是谁"。</div>
+
+<h3>4a · 零标签版（第一天就能上线）</h3>
+<div class="step"><span class="sn">第 1 步</span>把全部正常账户的向量（方法②的体检表最好用）存成一个"白样本库"。</div>
+<div class="step"><span class="sn">第 2 步</span>新账户来了，在库里找它的第 5 近邻居，记下这个距离。
+<div class="ex">直觉：正常人身边挤满了同类（学生党的体检表和几万个学生党几乎一样），第 5 近距离很小；<br>
+骗子的行为组合在正常人库里找不到 5 个相似的，第 5 近距离很大。<br>
+为什么取"第 5 近"不取"第 1 近"：防止碰巧有一个怪邻居；取第 5 个更稳。</div></div>
+<div class="step"><span class="sn">第 3 步</span>距离就是风险分。<b>没有训练过程，这个方法根本没有"模型"。</b></div>
+<div class="res">实验：AUC <b>0.979</b>——一行深度学习代码都没写。</div>
+
+<h3>4b · 案件库版（攒下 100+ 结案案件后解锁）</h3>
+<div class="step"><span class="sn">第 1 步</span>每个<b>人工确认过</b>的欺诈账户，把它的向量+手法标签（"盗号"/"养卡"…）存入案件库。
+库 = 大量白样本 + 已结案黑样本。</div>
+<div class="step"><span class="sn">第 2 步</span>新报警查 top-10 邻居，数邻居里有几个是案件。
+<div class="ex">例：账户 X 的 10 个最近邻里有 <b>8 个</b>是历史案件 → 风险分 0.8，且 8 个里 6 个是"养卡套现"
+→ 归因："疑似养卡，与 3 月案件批次高度相似"。<br>
+账户 Y 的 10 个邻居全是正常客户 → 风险分 0，放行。</div></div>
+<div class="step"><span class="sn">第 3 步</span>报给审核员时直接附上那几个最像的历史案件——<b>证据自带，审核员不用信任黑盒</b>。</div>
+<div class="res"><b>实验成绩</b>：只放 120 个案件进库 → 检测 AUC <b>0.984</b>、Recall@10 = 95%、手法归因命中 <b>92.5%</b>。<br>
+<b>关键细节</b>：查案件库要用方法⑥的"指纹向量"（手法命中 92.5%），用行为嵌入只有 69.2%——
+因为"像哪种案"取决于"哪里不对劲"而不是"他是哪种人"。</div>
+<div class="trap"><b>坑</b>：案件库是冷启动的——第一天是空的，所以 4b 排在 4a 之后；
+库要去重（同一批案件灌 100 个副本会让邻居全是自己人）；结案标注要有质检流程，错案入库会传染。</div>
+
+<!-- ============ 方法5 ============ -->
+<h2 id="m5"><span class="no">⑤</span>行为嵌入 + KMeans —— 把客户自动分成几种人<span class="tag t-teal">人群层</span></h2>
+
+<div class="why"><b>解决什么问题</b>：回答"我行客户按行为分是哪几种人"，然后<b>每种人单独建模、单独定阈值</b>——
+这直接解决方法③揭示的"单中心失败"问题，也消灭"生活方式特殊 ≠ 欺诈"的系统性误报
+（夜市摊主凌晨活跃是正常的，退休储户凌晨活跃才反常）。<br>
+<b>比喻</b>：先分班再考试。全校一条及格线不公平，体育班和奥数班该各有各的标准。</div>
+
+<div class="step"><span class="sn">第 1 步</span><b>白嫖方法①训练好的模型，提取"行为嵌入"。</b>
+模型读一个客户的序列时，内部每个事件会产生一个 64 维的理解向量；把整条序列的向量取平均，
+得到这个客户的"行为指纹"——64 个数字概括了他的行为风格。<b>不需要任何额外训练。</b>
+<div class="ex">为什么这 64 个数字有意义：模型为了做好"填空游戏"，必须先搞清楚"这是哪种人"
+（学生党后面填"小额消费"，商户后面填"转入"）——所以"是哪种人"的信息被迫存在了这些向量里。</div></div>
+
+<div class="step"><span class="sn">第 2 步</span><b>标准化后跑 KMeans。</b>KMeans 的完整过程：
+<div class="ex">a. 随机选 4 个客户当临时"班长"；<br>
+b. 每个客户加入离自己最近的班长的班；<br>
+c. 每个班重新选班长 = 全班的平均位置；<br>
+d. 重复 b、c 十几轮，直到没人换班。结束。<br>
+（它只依赖"两个客户距离怎么算"，而这已经由嵌入向量给出了。）</div></div>
+
+<div class="step"><span class="sn">第 3 步</span><b>用"轮廓系数"决定分几个班（K 取几）。</b>
+轮廓系数衡量"每个人离本班多近、离外班多远"，K 取 2~8 各聚一遍，哪个 K 的轮廓分最高就选哪个。
+<div class="ex">实验里它<b>自动</b>选出了 K=4——而数据里真的就是 4 种人。不用人告诉它答案。</div></div>
+
+<div class="step"><span class="sn">第 4 步</span><b>给每个簇起名字。</b>算法只会输出"簇0/簇1/簇2/簇3"，
+名字要人起：把每个簇的平均体检表打出来看。
+<div class="ex">簇2：POS 渠道 72%、转入占比 26%、营业时间活跃 → 命名"个体商户"。<br>
+簇0：单笔中位数 4000+、WEB 渠道、查余额频繁 → 命名"理财大户"。</div></div>
+
+<div class="step"><span class="sn">第 5 步</span><b>兑现价值：分群建模。</b>每个人群单独跑方法①的训练和阈值
+（反洗钱行业里这叫客群分层，是监管要求级别的标准流程）。新客户先归班（找最近的簇中心），再用本班的标准审。</div>
+
+<div class="res"><b>实验成绩</b>：ARI 0.978——2000 人里只有 17 人分错班（混淆矩阵里商户 500/500 全对、理财 500/500 全对）。</div>
+<div class="trap"><b>坑</b>：⚠️ <b>它只能聚"人群"，聚不出"手法"</b>——拿它聚 240 个黑样本，与手法真值的吻合度是
+<b class="red">−0.001（纯随机）</b>，但与黑样本"伪装成的人群"吻合 0.805。嵌入看骗子，看到的是他的伪装。
+聚手法必须换方法⑥。另外簇要有人审核命名后才能进流程，别让算法编号直接上生产。</div>
+
+<!-- ============ 方法6 ============ -->
+<h2 id="m6"><span class="no">⑥</span>异常指纹 —— 聚"哪里不对劲"，不聚"他是谁"<span class="tag t-teal">手法归因层</span></h2>
+
+<div class="why"><b>解决什么问题</b>：报警池里 200 个可疑账户，哪些是盗号（要抢时间冻结）、哪些是被诱导转账
+（要劝阻的是受害者本人）、哪些是养卡（不急，走商户审核队列）？处置搞混比不处置还糟。<br>
+<b>比喻</b>：法医不按"死者是谁"给案件分类，按"伤口特征"分类。方法⑤是按人分，本方法是按伤口分。</div>
+
+<div class="step"><span class="sn">第 1 步</span><b>只对超过报警线的账户做</b>（全量做没意义，正常账户的"伤口"是空白）。</div>
+
+<div class="step"><span class="sn">第 2 步</span><b>把方法①的中间产物拼成"指纹向量"。</b>
+方法①的四个预测头各自会吃惊，把每个头的惊讶情况 + 惊讶发生在什么事件上，拼成一个向量：
+<div class="ex">每头 4 个统计量（平均 z 分、最惊讶 5 笔的均值、最大值、超 2σ 的占比）×4 头 = 16 维<br>
++ 高惊讶位置落在哪些事件类型上的分布（12 维）<br>
++ 高惊讶位置的间隔节奏分布（10 维）<br><br>
+两种手法的指纹长这样（示意）：<br>
+<b>盗号爆发</b> → 结果头 z=5.1(爆)、间隔头 z=4.2(爆)、金额头 z=3.8，惊讶集中在[登录,改密码,转出]，节奏全在"1分钟内"档<br>
+<b>慢速抽干</b> → 结果头 z=0.2(平静!)、间隔头 z=0.8、金额头 z=2.9(持续偏高)，惊讶集中在[转出]，节奏在"隔天"档<br>
+四个头就像四个证人，谁喊了、喊多响、为什么事喊——组合起来就是手法签名。</div></div>
+
+<div class="step"><span class="sn">第 3 步</span><b>对指纹向量聚类（无案件库时）。</b>
+标准化 + KMeans（或 HDBSCAN，好处是不用定簇数、还会把"不属于任何簇"的账户单独标出来——
+<b>那些就是新手法的预警信号</b>）。</div>
+
+<div class="step"><span class="sn">第 4 步</span><b>簇命名 + 路由。</b>每个簇打印平均指纹给专家看、命名，
+然后不同簇路由到不同处置流程。攒下结案案件后，升级成方法 4b 的指纹检索（命中率更高且带证据）。</div>
+
+<div class="res"><b>实验成绩</b>：KMeans 聚 4 手法 ARI 0.587（盗号 60/60 完美隔离，混淆集中在赌博↔养卡）；
+指纹空间案件检索手法命中 <b>92.5%</b>。对照组：用行为嵌入做同一件事 = −0.001，用词频 = 0.472——
+<b>手法信息只住在"偏移空间"里，这是全项目最重要的一条定律</b>。</div>
+<div class="trap"><b>坑</b>：指纹质量完全依赖方法①的模型质量（模型没学好，指纹就是噪声）；
+0.587 说明簇不是完美的，人工命名环节不能省；赌博↔养卡的混淆可以靠往指纹里加"高惊讶位置的时刻分布"改善（待验证）。</div>
+
+<!-- ============ 方法7 ============ -->
+<h2 id="m7"><span class="no">⑦</span>秩融合 —— 三个考官取平均名次<span class="tag t-teal">合分层</span></h2>
+
+<div class="why"><b>解决什么问题</b>：方法①②④各有擅长的欺诈类型和各自的盲区，怎么合成一个最终分？<br>
+<b>比喻</b>：三个考官打分，一个满分 10、一个满分 100、一个打 A~F——分数没法直接加。
+但可以都换算成<b>名次</b>再平均：名次永远可比。</div>
+
+<div class="step"><span class="sn">第 1 步</span>每个通道给全部待评账户打分（分数含义、量纲各不相同，没关系）。</div>
+<div class="step"><span class="sn">第 2 步</span><b>把每个通道的分数换成名次</b>（最可疑 = 第 1 名）。</div>
+<div class="step"><span class="sn">第 3 步</span>每个账户的最终分 = 各通道名次的平均。
+<div class="ex">例（1000 个账户）：账户 X 在 MEM 通道排第 <b>3</b>（时序结构极反常）、
+在 iForest 通道排第 412（统计指标伪装得好）、在检索通道排第 <b>9</b> → 平均名次 141 → 仍进前 15%，抓住。<br>
+如果用"分数直接相加"，iForest 那个不痛不痒的分可能把它拉出报警区——名次平均对"单通道爆表"更宽容。</div></div>
+<div class="step"><span class="sn">第 4 步</span><b>只融合互补的通道，先踢掉弱通道。</b>
+实验里 DTW 轨迹通道是负贡献（拖后腿 −0.02）——融合不是越多越好。收敛到三个互补通道就够：
+<b>MEM（条件结构）+ iForest（聚合统计）+ 检索距离（记忆）</b>。</div>
+
+<div class="res"><b>实验成绩</b>：MEM 单通道 0.780 → 全通道秩融合 <b>0.986</b>。
+零训练、四行代码，+0.2 的 AUC——整个矩阵里性价比第二高的操作（第一是方法④）。</div>
+<div class="trap"><b>坑</b>：有了几十个确认标签后，可以把"简单平均"升级成"加权平均"（权重用标签学），
+但实验证明这之前不要动手——无标签时等权就是最优解。</div>
+
+<!-- ============ 拼装 ============ -->
+<h2 id="end"><span class="no">⑧</span>把 7 个办法拼成一条流水线</h2>
+<div class="flow">第 0 天上线（零训练版）
+  全量账户 → ② 体检表 + iForest ┐
+                                ├→ ⑦ 秩融合 → 白样本p99定阈值 → 报警池
+  全量账户 → ④a 第5近白距离    ┘
+
+第 1~2 周（模型版）
+  ① MEM 训练(只用白样本) → 惊讶度(mean+top-k双报) 加入融合
+  ⑤ 嵌入聚人群 → 每群独立阈值(告别一刀切)
+  ⑥ 报警池指纹聚类 → 手法簇 → 不同处置流程
+
+持续运营
+  每个结案案件 → 入 ④b 案件库(指纹空间) → 检索归因越来越准
+  每月: 重算阈值 / 重聚人群 / 对比手法簇变化(新簇=新手法预警)</div>
+
+<p><b>一句话总结这 7 个办法的关系</b>：②和④a 让你第一天就有 0.98 的检测能力；
+①补上它们看不见的时序盲区并顺手产出⑤⑥需要的原料；⑤把"一刀切"变成"分层审"；
+⑥把"抓到了"变成"知道是什么案子"；⑦把所有通道拧成一股绳；④b 让系统越用越聪明。</p>
+
+<footer>反欺诈 · 有效方法详解（小白版）· 2026-07-08 ·
+所有数字出自实验矩阵（blueprint-matrix.html / BLUEPRINT_MATRIX.md）·
+数据设计检视: cluster-data-view.html · 完整体系: FINAL_SOLUTION.md</footer>
+</div>
+<script>
+new MutationObserver(()=>{}).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+</script>
